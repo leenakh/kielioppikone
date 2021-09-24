@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Profiili{% endblock %}
+{% block content %}
+{% for word in words %}
+<div class="container">
+    {{ word.lemma }}
+</div>
+{% endfor %}
+{% endblock %}

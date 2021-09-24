@@ -121,6 +121,16 @@ def question(id):
     current_question = result.fetchone()
     return render_template("question.html", question=current_question)
 
+@app.route("/word", methods=["GET", "POST"])
+def word():
+    word = 'koira'
+    sql = "insert into words (lemma) values (:word)"
+    db.session.execute(sql, {"word":word})
+    sql = "select lemma from words"
+    result = db.session.execute(sql)
+    words = result.fetchall()
+    return render_template("word.html", words=words)
+
 @app.route("/frame")
 def frame():
     return render_template("frame.html")
