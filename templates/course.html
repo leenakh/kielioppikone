@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Kurssisivu{% endblock %}
+{% block content %}
+
+<h1>Tehtävät</h1>
+
+{% for question in questions %}
+{% if question in correct_answers %}
+<a href="/question/{{question.id}}" target="frame">
+    <div class="marked">{{ questions.index(question)+1 }}</div>
+</a>
+{% else %}
+<a href="/question/{{question.id}}" target="frame">
+    <div class="container">{{ questions.index(question)+1 }}</div>
+</a>
+</div>
+{% endif %}
+{% endfor %}
+<div class="frame-container">
+    <iframe src="/frame" name="frame" title="question" style="border: none;" scrolling="no"></iframe>
+</div>
+{% endblock %}

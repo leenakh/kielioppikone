@@ -1,0 +1,23 @@
+{% extends "simple.html" %}
+
+{% block content %}
+
+<script>
+    function update() {
+        console.log('haloo');
+        //window.history.go(2);
+    }
+</script>
+
+<div class="question-container">
+    <div>{{ question.lemma }}</div>
+    <div>{{ question.definition}}</div>
+    <form action="/answer/{{question.id}}" method="POST" target="frame">
+        Vastauksesi: <input type="text" name="answer" key={{question.id}}>
+            <input type="submit" onClick="update()" value="Tarkista">
+        <input type="hidden" name="correct" value="{{question.inflection}}">
+        <input type="hidden" name="course" value="{{question.course_id}}">
+    </form>
+</div>
+
+{% endblock %}
