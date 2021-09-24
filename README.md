@@ -6,7 +6,7 @@ Sovellus on tarkoitettu suomen kielen sanojen taivutusmuotojen harjoitteluun. So
 
 ## Sovelluksen toiminnot
 
-- käyttäjäksi **rekisteröityminen** (eri roolit opettajille ja oppilaille)
+- käyttäjäksi **rekisteröityminen** (eri roolit opettajille ja oppilaille; sovelluksen käyttäjä voi itse rekisteröityä vain oppilaan rooliin)
 - **kirjautuminen**
 - opettajilla **kurssien ja kurssitehtävien luominen**
 - oppilailla **kurssille liittyminen ja kurssitehtävien suorittaminen**
