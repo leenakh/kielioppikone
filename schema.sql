@@ -1,7 +1,7 @@
-CREATE TABLE users (id SERIAL PRIMARY KEY, first_name text, last_name TEXT, username TEXT UNIQUE, password TEXT, role TEXT);
-CREATE TABLE words (id SERIAL PRIMARY KEY, lemma TEXT UNIQUE);
-CREATE TABLE definitions (id SERIAL PRIMARY KEY, definition TEXT UNIQUE);
-CREATE TABLE courses (id SERIAL PRIMARY KEY, teacher_id INTEGER REFERENCES users, subject TEXT UNIQUE);
-CREATE TABLE questions (id SERIAL PRIMARY KEY, course_id INTEGER REFERENCES courses, word_id INTEGER REFERENCES words, definition_id INTEGER REFERENCES definitions, inflection TEXT);
-CREATE TABLE answers (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users, question_id INTEGER REFERENCES questions, course_id INTEGER REFERENCES courses, answered TIMESTAMP, correct BOOLEAN);
-CREATE TABLE enrollments (id SERIAL PRIMARY KEY, user_id INTEGER UNIQUE REFERENCES users, course_id INTEGER REFERENCES courses, entered TIMESTAMP)
+CREATE TABLE users (id SERIAL PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT NOT NULL, username TEXT UNIQUE NOT NULL CHECK (4<LEN(username) AND LEN(username)<20), password TEXT NOT NULL, role TEXT DEFAULT 'user');
+CREATE TABLE words (id SERIAL PRIMARY KEY, lemma TEXT NOT NULL UNIQUE);
+CREATE TABLE definitions (id SERIAL PRIMARY KEY, definition TEXT UNIQUE NOT NULL);
+CREATE TABLE courses (id SERIAL PRIMARY KEY, teacher_id INTEGER NOT NULL REFERENCES users, subject TEXT UNIQUE NOT NULL, description TEXT NOT NULL);
+CREATE TABLE questions (id SERIAL PRIMARY KEY, course_id INTEGER REFERENCES courses NOT NULL, word_id INTEGER NOT NULL REFERENCES words, definition_id INTEGER NOT NULL REFERENCES definitions, inflection TEXT NOT NULL);
+CREATE TABLE answers (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users, question_id INTEGER NOT NULL REFERENCES questions, course_id INTEGER NOT NULL REFERENCES courses, answered TIMESTAMP NOT NULL, correct BOOLEAN NOT NULL);
+CREATE TABLE enrollments (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL UNIQUE REFERENCES users, course_id INTEGER NOT NULL REFERENCES courses, entered TIMESTAMP NOT NULL)

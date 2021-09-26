@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block title %}Muokkaa kurssia{% endblock %}
+{% block content %}
+<h3>Kurssin tehtävät</h3>
+<div class="container">
+    <table>
+        {% for question in questions %}
+        <tr>
+            <td style="min-width: 100px;">{{ question.lemma }}</td>
+            <td>{{ question.inflection }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<h3>Lisää kurssille uusi tehtävä</h3>
+
+<datalist id="lemmas">
+    {% for word in words %}
+    <option value={{word.lemma}}>
+    {% endfor %}
+</datalist>
+
+<datalist id="definitions">
+    {% for definition in definitions %}
+    <option>{{ definition.definition }}</option>
+    {% endfor %}
+</datalist>
+
+<div class="container">
+    <form action="/course/{{id}}/edit/add" method="POST">
+        <p>Sanan perusmuoto: <input list="lemmas" type="text" name="lemma"></p>
+        <p>Taipunut muoto: <input type="text" name="inflection"></p>
+        <p>Määritelmä: <input list="definitions" type="text" name="definition"></p>
+        <p><input type="submit" value="Lisää tehtävä"></p>
+    </form>
+</div>
+
+{% endblock %}

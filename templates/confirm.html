@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Vahvistus{% endblock %}
+{% block content %}
+<div class="container">
+    {{ message }}
+</div>
+<br>
+<div class="link-container">
+    <a href="/course/{{id}}/enroll">Vahvista</a>
+</div>
+<div class="link-container">
+    <a href="/courses">Peruuta</a>
+</div>
+{% endblock %}

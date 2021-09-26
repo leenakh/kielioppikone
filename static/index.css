@@ -35,7 +35,7 @@ body.simple {
     width: 100%
 }
 
-.container, .marked {
+.container, .marked, .link-container {
     display: inline-block;
     margin-top: 0%;
     background-color: white;
@@ -46,6 +46,10 @@ body.simple {
 .marked {
     border-style: solid;
     border-color: purple;
+}
+
+.link-container {
+    margin-left: 40px;
 }
 
 .overlay {

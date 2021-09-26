@@ -47,6 +47,8 @@ def is_user():
 def is_admin():
     return session.get("role") == "admin"
 
+def is_teacher():
+    return session.get("role") == "teacher"
 
 def logout():
     del session["user_id"]

@@ -1,7 +1,14 @@
 {% extends "layout.html" %}
 {% block title %}Profiili{% endblock %}
 {% block content %}
+
 <div class="container">
-    {{ username }}
+    {% for course in courses %}
+    <p>
+        <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
+        {{ course.description }}<br>
+        <a href="/course/{{ course.id }}/edit">Muokkaa</a>
+    </p>
+    {% endfor %}
 </div>
 {% endblock %}
