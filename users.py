@@ -11,7 +11,7 @@ def register(username, password, role, first_name, last_name):
             sql = "INSERT INTO users (username, password, role, first_name, last_name) \
                 VALUES (:username, :password, :role, :first_name, :last_name)"
             db.session.execute(
-                sql, {"username": username, "password": hash_value, "role": role, "first_name":first_name, "last_name":last_name})
+                sql, {"username":username, "password":hash_value, "role":role, "first_name":first_name, "last_name":last_name})
             db.session.commit()
         except:
             return False

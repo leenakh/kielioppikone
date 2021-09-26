@@ -52,7 +52,7 @@ def profile(id):
     allow = False
     if users.is_admin():
         allow = True
-    elif users.is_user() and users.user_id() == id:
+    elif users.user_id() == id:
         allow = True
     if not allow:
         return render_template("error.html", message="Pääsy kielletty.")
@@ -139,16 +139,17 @@ def add(id):
     definition = request.form["definition"]
     sql = "select words.id from words where words.lemma = :lemma"
     result = db.session.execute(sql, {"lemma":lemma})
+    #if not result.fetchone():
+    #   sql = "insert into words (lemma) values (:lemma)"
+    #    db.session.execute(sql, {"lemma":lemma})
+    #    db.session.commit()
+    #    sql = "select words.id from words where words.lemma = :lemma"
+    #    result = db.session.execute(sql, {"lemma":lemma})
+    #    lemma_id = result.fetchone()[0]
+    #    print("newlemma", lemma_id)
+    #elif result.fetchone():
     lemma_id = result.fetchone()[0]
     print ("lemma_id ", lemma_id)
-    if lemma_id == None:
-        sql = "insert into words (lemma) values (:lemma)"
-        db.session.execute(sql, {"lemma":lemma})
-        db.session.commit()
-        sql = "select words.id from words where words.lemma = :lemma"
-        result = db.session.execute(sql, {"lemma":lemma})
-        lemma_id = result.fetchone()[0]
-        print("newlemma", lemma_id)
     sql = "select definitions.id from definitions where definitions.definition = :definition"
     result = db.session.execute(sql, {"definition":definition})
     definition_id = result.fetchone()[0]
