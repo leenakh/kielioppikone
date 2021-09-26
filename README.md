@@ -27,7 +27,7 @@ Toteutan ulkoasun ns. käsin kirjoittamalla tyylimäärittelyt css-tiedostoon. V
 
 ## Sovelluksen tila 26.9.2021
 
-Sovellus on käynnissä osoitteessa [kielioppikone.herokuapp.com](kielioppikone.herokuapp.com). Tietokannassa on jonkin verran testidataa, mm. käyttäjät *mummomatikainen* ja *kattimatikainen*, joista ensimmäisellä on opettajan rooli ja jälkimmäisellä tavallisen käyttäjän rooli. Kummankin salasana on "matikainen". Sovellukseen voi myös rekisteröidä uuden käyttäjätunnuksen sekä tietenkin kirjautua. Kursseja voi selata, mutta tällä hetkellä niihin ilmoittautumisessa on vika, jota en ole ehtinyt korjata (vain yhdelle kurssille ilmoittautuminen onnistuu). Kursseilla oleviin tehtäviin pystyy vastaamaan, jos on ilmoittautunut kurssille.
+Sovellus on käynnissä osoitteessa [https://kielioppikone.herokuapp.com](kielioppikone.herokuapp.com). Tietokannassa on jonkin verran testidataa, mm. käyttäjät *mummomatikainen* ja *kattimatikainen*, joista ensimmäisellä on opettajan rooli ja jälkimmäisellä tavallisen käyttäjän rooli. Kummankin salasana on "matikainen". Sovellukseen voi myös rekisteröidä uuden käyttäjätunnuksen sekä tietenkin kirjautua. Kursseja voi selata, mutta tällä hetkellä niihin ilmoittautumisessa on vika, jota en ole ehtinyt korjata (vain yhdelle kurssille ilmoittautuminen onnistuu). Kursseilla oleviin tehtäviin pystyy vastaamaan, jos on ilmoittautunut kurssille.
 
 Toistaiseksi hiukan rikkinäinen toiminto on opettajan rooliin kuuluva tehtävien lisääminen kurssille: olen saanut sen toimimaan osittain paikallisella palvelimella, mutta Herokussa se ei toimi lainkaan. 
 
