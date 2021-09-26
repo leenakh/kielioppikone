@@ -24,3 +24,11 @@ Sovellus on tarkoitettu suomen kielen sanojen taivutusmuotojen harjoitteluun. So
 ## Sovelluksen ulkoasu
 
 Toteutan ulkoasun ns. käsin kirjoittamalla tyylimäärittelyt css-tiedostoon. Viimeistelen visuaalisen ilmeen itse tekemälläni taustagrafiikalla ja hyödyntämällä Google Fontsia.
+
+## Sovelluksen tila 26.9.2021
+
+Sovellus on käynnissä osoitteessa [kielioppikone.herokuapp.com](kielioppikone.herokuapp.com). Tietokannassa on jonkin verran testidataa, mm. käyttäjät *mummomatikainen* ja *kattimatikainen*, joista ensimmäisellä on opettajan rooli ja jälkimmäisellä tavallisen käyttäjän rooli. Kummankin salasana on "matikainen". Sovellukseen voi myös rekisteröidä uuden käyttäjätunnuksen sekä tietenkin kirjautua. Kursseja voi selata, mutta tällä hetkellä niihin ilmoittautumisessa on vika, jota en ole ehtinyt korjata (vain yhdelle kurssille ilmoittautuminen onnistuu). Kursseilla oleviin tehtäviin pystyy vastaamaan, jos on ilmoittautunut kurssille.
+
+Toistaiseksi hiukan rikkinäinen toiminto on opettajan rooliin kuuluva tehtävien lisääminen kurssille: olen saanut sen toimimaan osittain paikallisella palvelimella, mutta Herokussa se ei toimi lainkaan. 
+
+Hakutoiminto ja uusien kurssien luominen puuttuvat vielä kokonaan, samoin käyttäjän profiilisivulla näytettävät tilastotiedot.
