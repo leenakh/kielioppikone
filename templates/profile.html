@@ -7,8 +7,13 @@
     <p>
         <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
         {{ course.description }}<br>
+        {% if is_teacher %}
         <a href="/course/{{ course.id }}/edit">Muokkaa</a>
+        {% elif is_admin %}
+        <div>Hallintanäkymä</div>
+        {% else %}
+        <div>Tilastoja</div>
+        {% endif %}
     </p>
     {% endfor %}
-</div>
 {% endblock %}

@@ -45,24 +45,6 @@ def logout():
     return render_template("error.html", message="Uloskirjautuminen ei onnistunut.")
 
 
-@app.route("/profile/<int:id>")
-def profile(id):
-    user_id = users.user_id()
-    username = users.username()
-    allow = False
-    if users.is_admin():
-        allow = True
-    elif users.user_id() == id:
-        allow = True
-    if not allow:
-        return render_template("error.html", message="Pääsy kielletty.")
-    if users.is_teacher:
-        sql = "select courses.id, courses.subject, courses.description from courses where courses.teacher_id = :user_id"
-        result = db.session.execute(sql, {"user_id":user_id})
-        courses = result.fetchall()
-    return render_template("profile.html", user_id=user_id, username=username, courses=courses)
-
-
 @app.route("/courses/")
 def courses():
     sql = "select courses.id, courses.teacher_id, courses.subject, \
@@ -71,6 +53,31 @@ def courses():
     result = db.session.execute(sql)
     courses_list = result.fetchall()
     return render_template("courses.html", courses=courses_list)
+
+
+
+@app.route("/profile/<int:id>")
+def profile(id):
+    user_id = users.user_id()
+    username = users.username()
+    allow = False
+    #is_teacher = users.is_teacher()
+    #print('is teacher ', is_teacher)
+    if users.is_admin():
+        allow = True
+    elif users.user_id() == id:
+        allow = True
+    if not allow:
+        return render_template("error.html", message="Pääsy kielletty.")
+    elif users.is_teacher():
+        sql = "select courses.id, courses.subject, courses.description from courses where courses.teacher_id = :user_id"
+        result = db.session.execute(sql, {"user_id":user_id})
+        courses = result.fetchall()
+    else:
+        sql = "select courses.id, courses.subject, courses.description, enrollments.course_id from courses join enrollments on enrollments.course_id = courses.id where enrollments.user_id = :user_id"
+        result = db.session.execute(sql, {"user_id":user_id})
+        courses = result.fetchall()
+    return render_template("profile.html", user_id=user_id, username=username, courses=courses, is_teacher=users.is_teacher(), is_admin=users.is_admin())
 
 
 @app.route("/answer/<int:id>", methods=["POST"])
@@ -117,6 +124,7 @@ def edit(id):
     sql = "select courses.teacher_id from courses where courses.id = :id"
     result = db.session.execute(sql, {"id":id})
     teacher_id = result.fetchone()[0]
+    print ("teacher_id ", teacher_id)
     if user_id != teacher_id:
         return render_template("error.html", message='Pääsy kielletty.')
     sql = "select questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id where questions.course_id = :id"
@@ -134,26 +142,21 @@ def edit(id):
 @app.route("/course/<int:id>/edit/add", methods=["GET", "POST"])
 def add(id):
     lemma = request.form["lemma"]
-    print("lemma ", lemma)
     inflection = request.form["inflection"]
     definition = request.form["definition"]
-    sql = "select words.id from words where words.lemma = :lemma"
-    result = db.session.execute(sql, {"lemma":lemma})
-    #if not result.fetchone():
-    #   sql = "insert into words (lemma) values (:lemma)"
-    #    db.session.execute(sql, {"lemma":lemma})
-    #    db.session.commit()
-    #    sql = "select words.id from words where words.lemma = :lemma"
-    #    result = db.session.execute(sql, {"lemma":lemma})
-    #    lemma_id = result.fetchone()[0]
-    #    print("newlemma", lemma_id)
-    #elif result.fetchone():
-    lemma_id = result.fetchone()[0]
-    print ("lemma_id ", lemma_id)
+    lemma_id = 0;
+    try:
+        sql = "select words.id from words where words.lemma = :lemma"
+        result = db.session.execute(sql, {"lemma":lemma})
+        lemma_id = result.fetchone()[0]
+    except:
+        sql = "insert into words (lemma) values (:lemma) returning id"
+        result = db.session.execute(sql, {"lemma":lemma})
+        db.session.commit()
+        lemma_id = result.fetchone()[0]
     sql = "select definitions.id from definitions where definitions.definition = :definition"
     result = db.session.execute(sql, {"definition":definition})
     definition_id = result.fetchone()[0]
-    print("definition ", definition_id)
     sql = "insert into questions (course_id, word_id, definition_id, inflection) \
         values (:id, :lemma_id, :definition_id, :inflection)"
     db.session.execute(sql, {"id":id, "lemma_id":lemma_id, "definition_id":definition_id, "inflection":inflection})
