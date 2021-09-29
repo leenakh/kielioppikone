@@ -28,14 +28,16 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "GET":
+    if request.method == "GET" and users.user_id() == 0:
         return render_template("login.html")
-    if request.method == "POST":
+    elif request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
         if users.login(username, password):
             return redirect("/")
         return render_template("error.html", message="Väärä käyttäjätunnus tai salasana")
+    else:
+        return render_template("error.html", message="Toiminto ei ole sallittu.")
 
 
 @app.route("/logout")
@@ -55,14 +57,11 @@ def courses():
     return render_template("courses.html", courses=courses_list)
 
 
-
 @app.route("/profile/<int:id>")
 def profile(id):
     user_id = users.user_id()
     username = users.username()
     allow = False
-    #is_teacher = users.is_teacher()
-    #print('is teacher ', is_teacher)
     if users.is_admin():
         allow = True
     elif users.user_id() == id:
@@ -121,9 +120,10 @@ def course(id):
 @app.route("/course/<int:id>/edit")
 def edit(id):
     user_id = users.user_id()
-    sql = "select courses.teacher_id from courses where courses.id = :id"
+    sql = "select courses.teacher_id, courses.subject, courses.description from courses where courses.id = :id"
     result = db.session.execute(sql, {"id":id})
-    teacher_id = result.fetchone()[0]
+    course = result.fetchone()
+    teacher_id = course.teacher_id
     print ("teacher_id ", teacher_id)
     if user_id != teacher_id:
         return render_template("error.html", message='Pääsy kielletty.')
@@ -136,8 +136,7 @@ def edit(id):
     sql = "select definitions.definition from definitions"
     result = db.session.execute(sql)
     definitions = result.fetchall()
-    if user_id == 1:
-        return render_template("edit.html", questions=questions, id=id, words=words, definitions=definitions)
+    return render_template("edit.html", questions=questions, id=id, words=words, definitions=definitions, course=course)
 
 @app.route("/course/<int:id>/edit/add", methods=["GET", "POST"])
 def add(id):
@@ -162,6 +161,27 @@ def add(id):
     db.session.execute(sql, {"id":id, "lemma_id":lemma_id, "definition_id":definition_id, "inflection":inflection})
     db.session.commit()
     return redirect("/course/" + str(id) + "/edit")
+
+
+@app.route("/course/<int:id>/edit/change", methods=["POST"])
+def change(id):
+    user_id = users.user_id()
+    subject = request.form["subject"]
+    description = request.form["description"]
+    if subject != '' and description == '':
+        sql = "update courses set subject = :subject where id = :id"
+        db.session.execute(sql, {"id":id, "subject":subject})
+        db.session.commit()
+    elif description != '' and subject == '':
+        sql = "update courses set description = :description where id = :id"
+        db.session.execute(sql, {"id":id, "description":description})
+        db.session.commit()
+    elif subject != '' and description != '':
+        sql = "update courses set description = :description, subject = :subject where id = :id"
+        db.session.execute(sql, {"id":id, "subject":subject, "description":description})
+        db.session.commit()
+    return redirect("/course/" + str(id) + "/edit")
+
 
 @app.route("/course/<int:id>/enroll")
 def enroll(id):

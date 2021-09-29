@@ -1,6 +1,10 @@
 {% extends "layout.html" %}
 {% block title %}Muokkaa kurssia{% endblock %}
 {% block content %}
+
+<h2>{{ course.subject }}</h2>
+<div style="margin-left: 20px;"><i>{{ course.description }}</i></div>
+<hr>
 <h3>Kurssin tehtävät</h3>
 <div class="container">
     <table>
@@ -18,7 +22,7 @@
 <datalist id="lemmas">
     {% for word in words %}
     <option value={{word.lemma}}>
-    {% endfor %}
+        {% endfor %}
 </datalist>
 
 <datalist id="definitions">
@@ -33,6 +37,21 @@
         <p>Taipunut muoto: <input type="text" name="inflection"></p>
         <p>Määritelmä: <input list="definitions" type="text" name="definition"></p>
         <p><input type="submit" value="Lisää tehtävä"></p>
+    </form>
+</div>
+
+<h3>Muokkaa kurssin tietoja</h3>
+<div class="container">
+    <form action="/course/{{id}}/edit/change" method="POST">
+        <p>
+            <label>Otsikko: </label><input type="text" name="subject">
+        </p>
+        <p>
+            <label>Kuvaus: </label><input type="text" name="description">
+        </p>
+        <p>
+            <input type="submit" value="Lähetä">
+        </p>
     </form>
 </div>
 

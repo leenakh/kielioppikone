@@ -2,18 +2,19 @@
 {% block title %}Profiili{% endblock %}
 {% block content %}
 
+{% for course in courses %}
 <div class="container">
-    {% for course in courses %}
-    <p>
-        <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
-        {{ course.description }}<br>
-        {% if is_teacher %}
-        <a href="/course/{{ course.id }}/edit">Muokkaa</a>
-        {% elif is_admin %}
-        <div>Hallintanäkymä</div>
-        {% else %}
-        <div>Tilastoja</div>
-        {% endif %}
-    </p>
-    {% endfor %}
+
+    <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
+    {{ course.description }}<br>
+    {% if is_teacher %}
+    <a href="/course/{{ course.id }}/edit">Muokkaa</a>
+    {% elif is_admin %}
+    <div>Hallintanäkymä</div>
+    {% else %}
+    <div>Tilastoja</div>
+    {% endif %}
+
+</div>
+{% endfor %}
 {% endblock %}
