@@ -1,4 +1,4 @@
-from flask import redirect, render_template, request
+from flask import redirect, render_template, request, session, abort
 from app import app
 from db import db
 import users
@@ -81,6 +81,8 @@ def profile(id):
 
 @app.route("/answer/<int:id>", methods=["POST"])
 def answer(id):
+    if session["csrf_token"] != request.form["csrf_token"]:
+        abort(403)
     current_answer = request.form["answer"]
     correct = request.form["correct"]
     current_course = request.form["course"]
@@ -140,6 +142,8 @@ def edit(id):
 
 @app.route("/course/<int:id>/edit/add", methods=["GET", "POST"])
 def add(id):
+    if session["csrf_token"] != request.form["csrf_token"]:
+        abort(403)
     lemma = request.form["lemma"]
     inflection = request.form["inflection"]
     definition = request.form["definition"]
@@ -165,6 +169,8 @@ def add(id):
 
 @app.route("/course/<int:id>/edit/change", methods=["POST"])
 def change(id):
+    if session["csrf_token"] != request.form["csrf_token"]:
+        abort(403)
     user_id = users.user_id()
     subject = request.form["subject"]
     description = request.form["description"]
@@ -186,6 +192,12 @@ def change(id):
 @app.route("/course/<int:id>/enroll")
 def enroll(id):
     user_id = users.user_id()
+    sql = "select enrollments.id from enrollments \
+        where user_id = :user_id and course_id = :id"
+    result = db.session.execute(sql, {"user_id": user_id, "id": id})
+    enrolled = result.fetchone()
+    if enrolled:
+        return render_template("error.html", message="Olet jo ilmoittautunut tälle kurssille.")
     try:
         sql = "insert into enrollments (user_id, course_id, entered) \
             values (:user_id, :course_id, NOW())"

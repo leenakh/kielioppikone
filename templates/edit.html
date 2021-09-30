@@ -37,6 +37,7 @@
         <p>Taipunut muoto: <input type="text" name="inflection"></p>
         <p>Määritelmä: <input list="definitions" type="text" name="definition"></p>
         <p><input type="submit" value="Lisää tehtävä"></p>
+        <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
     </form>
 </div>
 
@@ -52,6 +53,7 @@
         <p>
             <input type="submit" value="Lähetä">
         </p>
+        <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
     </form>
 </div>
 

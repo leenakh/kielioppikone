@@ -10,6 +10,7 @@
             <input type="submit" onClick="update()" value="Tarkista">
         <input type="hidden" name="correct" value="{{question.inflection}}">
         <input type="hidden" name="course" value="{{question.course_id}}">
+        <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
     </form>
 </div>
 
