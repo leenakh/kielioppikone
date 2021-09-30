@@ -30,14 +30,13 @@ def register():
 def login():
     if request.method == "GET" and users.user_id() == 0:
         return render_template("login.html")
-    elif request.method == "POST":
+    if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
         if users.login(username, password):
             return redirect("/")
         return render_template("error.html", message="Väärä käyttäjätunnus tai salasana")
-    else:
-        return render_template("error.html", message="Toiminto ei ole sallittu.")
+    return render_template("error.html", message="Toiminto ei ole sallittu.")
 
 
 @app.route("/logout")
@@ -49,7 +48,7 @@ def logout():
 
 @app.route("/courses/")
 def courses():
-    sql = "select courses.id, courses.teacher_id, courses.subject, \
+    sql = "select courses.id, courses.teacher_id, courses.subject, courses.description, courses.exercises, \
         users.first_name, users.last_name from courses \
         left join users on courses.teacher_id = users.id"
     result = db.session.execute(sql)
@@ -70,13 +69,13 @@ def profile(id):
         return render_template("error.html", message="Pääsy kielletty.")
     elif users.is_teacher():
         sql = "select courses.id, courses.subject, courses.description from courses where courses.teacher_id = :user_id"
-        result = db.session.execute(sql, {"user_id":user_id})
-        courses = result.fetchall()
+        result = db.session.execute(sql, {"user_id": user_id})
+        users_courses = result.fetchall()
     else:
         sql = "select courses.id, courses.subject, courses.description, enrollments.course_id from courses join enrollments on enrollments.course_id = courses.id where enrollments.user_id = :user_id"
-        result = db.session.execute(sql, {"user_id":user_id})
-        courses = result.fetchall()
-    return render_template("profile.html", user_id=user_id, username=username, courses=courses, is_teacher=users.is_teacher(), is_admin=users.is_admin())
+        result = db.session.execute(sql, {"user_id": user_id})
+        users_courses = result.fetchall()
+    return render_template("profile.html", user_id=user_id, username=username, courses=users_courses, is_teacher=users.is_teacher(), is_admin=users.is_admin())
 
 
 @app.route("/answer/<int:id>", methods=["POST"])
@@ -123,10 +122,10 @@ def course(id):
 def edit(id):
     user_id = users.user_id()
     sql = "select courses.teacher_id, courses.subject, courses.description from courses where courses.id = :id"
-    result = db.session.execute(sql, {"id":id})
+    result = db.session.execute(sql, {"id": id})
     course = result.fetchone()
     teacher_id = course.teacher_id
-    print ("teacher_id ", teacher_id)
+    print("teacher_id ", teacher_id)
     if user_id != teacher_id:
         return render_template("error.html", message='Pääsy kielletty.')
     sql = "select questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id where questions.course_id = :id"
@@ -140,6 +139,7 @@ def edit(id):
     definitions = result.fetchall()
     return render_template("edit.html", questions=questions, id=id, words=words, definitions=definitions, course=course)
 
+
 @app.route("/course/<int:id>/edit/add", methods=["GET", "POST"])
 def add(id):
     if session["csrf_token"] != request.form["csrf_token"]:
@@ -147,23 +147,30 @@ def add(id):
     lemma = request.form["lemma"]
     inflection = request.form["inflection"]
     definition = request.form["definition"]
-    lemma_id = 0;
-    try:
-        sql = "select words.id from words where words.lemma = :lemma"
-        result = db.session.execute(sql, {"lemma":lemma})
-        lemma_id = result.fetchone()[0]
-    except:
-        sql = "insert into words (lemma) values (:lemma) returning id"
-        result = db.session.execute(sql, {"lemma":lemma})
-        db.session.commit()
-        lemma_id = result.fetchone()[0]
+    lemma_id = 0
+    if 1 < len(lemma) < 51 and 1 < len(inflection) < 51 and len(definition) < 51:
+        try:
+            sql = "select words.id from words where words.lemma = :lemma"
+            result = db.session.execute(sql, {"lemma": lemma})
+            lemma_id = result.fetchone()[0]
+        except:
+            sql = "insert into words (lemma) values (:lemma) returning id"
+            result = db.session.execute(sql, {"lemma": lemma})
+            db.session.commit()
+            lemma_id = result.fetchone()[0]
+    else:
+        return render_template("error.html", message="Syötteen täytyy olla 2 - 50 merkkiä pitkä.")
     sql = "select definitions.id from definitions where definitions.definition = :definition"
-    result = db.session.execute(sql, {"definition":definition})
+    result = db.session.execute(sql, {"definition": definition})
     definition_id = result.fetchone()[0]
     sql = "insert into questions (course_id, word_id, definition_id, inflection) \
         values (:id, :lemma_id, :definition_id, :inflection)"
-    db.session.execute(sql, {"id":id, "lemma_id":lemma_id, "definition_id":definition_id, "inflection":inflection})
+    db.session.execute(sql, {"id": id, "lemma_id": lemma_id,
+                       "definition_id": definition_id, "inflection": inflection})
     db.session.commit()
+    sql = "update courses set exercises = exercises + 1 where courses.id = :id"
+    db.session.execute(sql, {"id": id})
+    db. session.commit()
     return redirect("/course/" + str(id) + "/edit")
 
 
@@ -171,20 +178,22 @@ def add(id):
 def change(id):
     if session["csrf_token"] != request.form["csrf_token"]:
         abort(403)
-    user_id = users.user_id()
     subject = request.form["subject"]
     description = request.form["description"]
+    if len(subject) > 50 or len(description) > 200:
+        return render_template("error.html", message="Syöte saa olla enintään 50 merkkiä pitkä.")
     if subject != '' and description == '':
         sql = "update courses set subject = :subject where id = :id"
-        db.session.execute(sql, {"id":id, "subject":subject})
+        db.session.execute(sql, {"id": id, "subject": subject})
         db.session.commit()
     elif description != '' and subject == '':
         sql = "update courses set description = :description where id = :id"
-        db.session.execute(sql, {"id":id, "description":description})
+        db.session.execute(sql, {"id": id, "description": description})
         db.session.commit()
     elif subject != '' and description != '':
         sql = "update courses set description = :description, subject = :subject where id = :id"
-        db.session.execute(sql, {"id":id, "subject":subject, "description":description})
+        db.session.execute(
+            sql, {"id": id, "subject": subject, "description": description})
         db.session.commit()
     return redirect("/course/" + str(id) + "/edit")
 
