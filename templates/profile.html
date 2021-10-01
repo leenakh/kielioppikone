@@ -2,17 +2,29 @@
 {% block title %}Profiili{% endblock %}
 {% block content %}
 
+{% if is_user %}
+<h3>Tilasto (kaikki kurssit)</h3>
+<div class="container">
+Olet vastannut oikein {{ correct }} kertaa.<br>
+Olet vastannut väärin {{ incorrect }} kertaa.<br>
+Vastauksistasi {{ success }} % on oikein.<br>
+</div>
+{% endif %}
+
+<h3>Omat kurssisi</h3>
 {% for course in courses %}
 <div class="container">
 
     <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
     {{ course.description }}<br>
+    <b>{{ course.exercises }} tehtävää</b>
     {% if is_teacher %}
     <a href="/course/{{ course.id }}/edit">Muokkaa</a>
     {% elif is_admin %}
     <div>Hallintanäkymä</div>
     {% else %}
-    <div>Tilastoja</div>
+    
+    <a href="/course/{{ course.id }}/statistics/{{ user }}">Tilastoja</a>
     {% endif %}
 
 </div>

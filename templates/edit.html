@@ -25,17 +25,16 @@
         {% endfor %}
 </datalist>
 
-<datalist id="definitions">
-    {% for definition in definitions %}
-    <option>{{ definition.definition }}</option>
-    {% endfor %}
-</datalist>
-
 <div class="container">
     <form action="/course/{{id}}/edit/add" method="POST">
         <p>Sanan perusmuoto: <input list="lemmas" type="text" name="lemma"></p>
         <p>Taipunut muoto: <input type="text" name="inflection"></p>
-        <p>Määritelmä: <input list="definitions" type="text" name="definition"></p>
+        <p>Määritelmä:<br>
+            {% for definition in definitions %}
+            <input type="radio" id={{definition.definition}} name="definition" value="{{ definition.definition }}">
+            <label for="{{ definition.definition }}">{{ definition.definition }}</label><br>
+            {% endfor %}
+        </p>
         <p><input type="submit" value="Lisää tehtävä"></p>
         <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
     </form>

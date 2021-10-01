@@ -2,6 +2,7 @@ from flask import redirect, render_template, request, session, abort
 from app import app
 from db import db
 import users
+import math
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -58,6 +59,9 @@ def courses():
 
 @app.route("/profile/<int:id>")
 def profile(id):
+    correct_answers = 0
+    incorrect_answers = 0
+    success_rate = 0
     user_id = users.user_id()
     username = users.username()
     allow = False
@@ -68,14 +72,24 @@ def profile(id):
     if not allow:
         return render_template("error.html", message="Pääsy kielletty.")
     elif users.is_teacher():
-        sql = "select courses.id, courses.subject, courses.description from courses where courses.teacher_id = :user_id"
+        sql = "select courses.id, courses.subject, courses.description, courses.exercises from courses where courses.teacher_id = :user_id"
         result = db.session.execute(sql, {"user_id": user_id})
         users_courses = result.fetchall()
     else:
-        sql = "select courses.id, courses.subject, courses.description, enrollments.course_id from courses join enrollments on enrollments.course_id = courses.id where enrollments.user_id = :user_id"
+        sql = "select courses.id, courses.subject, courses.description, courses.exercises, enrollments.course_id from courses join enrollments on enrollments.course_id = courses.id where enrollments.user_id = :user_id"
         result = db.session.execute(sql, {"user_id": user_id})
         users_courses = result.fetchall()
-    return render_template("profile.html", user_id=user_id, username=username, courses=users_courses, is_teacher=users.is_teacher(), is_admin=users.is_admin())
+        sql = "select count(answers.id), answers.correct, answers.user_id from answers group by answers.correct, answers.user_id having answers.user_id = :user_id"
+        result = db.session.execute(sql, {"user_id": user_id})
+        answers = result.fetchall()
+        for answer in answers:
+            if answer.correct:
+                correct_answers = answer.count
+            else:
+                incorrect_answers = answer.count
+        answers_total = correct_answers + incorrect_answers
+        success_rate = math.floor(correct_answers / answers_total * 100)
+    return render_template("profile.html", user=user_id, username=username, courses=users_courses, is_user=users.is_user(), is_teacher=users.is_teacher(), is_admin=users.is_admin(), correct=correct_answers, incorrect=incorrect_answers, success=success_rate)
 
 
 @app.route("/answer/<int:id>", methods=["POST"])
@@ -198,6 +212,24 @@ def change(id):
     return redirect("/course/" + str(id) + "/edit")
 
 
+@app.route("/course/<int:id>/statistics/<int:user>")
+def statistics(id, user):
+    sql = "select count(answers.id) as count, answers.correct, answers.course_id, answers.user_id, courses.subject from answers join courses on courses.id = answers.course_id group by answers.correct, answers.course_id, answers.user_id, courses.subject having answers.course_id = :id and answers.user_id = :user"
+    result = db.session.execute(sql, {"id": id, "user": user})
+    answers = result.fetchall()
+    correct_answers = 0
+    incorrect_answers = 0
+    for answer in answers:
+        if answer.correct:
+            correct_answers = answer.count
+        else:
+            incorrect_answers = answer.count
+    answers_total = correct_answers + incorrect_answers
+    success_rate = math.floor(correct_answers / answers_total * 100)
+    subject = answers[0].subject
+    return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject)
+
+
 @app.route("/course/<int:id>/enroll")
 def enroll(id):
     user_id = users.user_id()
@@ -238,3 +270,9 @@ def question(id):
 @app.route("/frame")
 def frame():
     return render_template("frame.html")
+
+# TODO
+# etusivulle jotain uusimmat tapahtumat tms.
+# tietojen poistaminen: käyttäjätunnus, kurssi, kurssin tehtävä
+# kurssille kenttä, joka kertoo luokan (esim. nominien taivutus, verbien taivutus), ja/tai ehkä asiasanoja?
+# placeholderit lomakekenttiin

@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Profiili{% endblock %}
+{% block content %}
+
+<h2>{{ subject }}</h2>
+
+<div class="container">
+Olet vastannut oikein {{ correct }} kertaa.<br>
+Olet vastannut väärin {{ incorrect }} kertaa.<br>
+Vastauksistasi {{ success }} % on oikein.<br>
+</div>
+
+{% endblock %}
