@@ -12,6 +12,9 @@
         <tr>
             <td style="min-width: 100px;">{{ question.lemma }}</td>
             <td>{{ question.inflection }}</td>
+            {% if question.answers == 0 %}
+            <td><a href="/course/{{id}}/question/{{question.id}}/remove">Poista</a></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </table>

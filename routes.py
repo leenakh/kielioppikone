@@ -143,7 +143,7 @@ def edit(id):
     teacher_id = course.teacher_id
     if user_id != teacher_id:
         return render_template("error.html", message='Pääsy kielletty.', back="/profile/" + str(user_id))
-    sql = "select questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id where questions.course_id = :id"
+    sql = "select count(answers.id) as answers, questions.id, questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id left join answers on questions.id = answers.question_id group by questions.id, questions.inflection, questions.course_id, words.lemma having questions.course_id = :id"
     result = db.session.execute(sql, {"id": id})
     questions = result.fetchall()
     sql = "select words.lemma from words"
@@ -281,6 +281,24 @@ def question(id):
     current_question = result.fetchone()
     return render_template("question.html", question=current_question)
 
+@app.route("/course/<int:course_id>/question/<int:question_id>/remove")
+def remove(course_id, question_id):
+    user_id = users.user_id()
+    if user_id == 0:
+        return redirect("/login")
+    sql = "select courses.teacher_id from courses where id = :course_id"
+    result = db.session.execute(sql, {"course_id":course_id})
+    teacher_id = result.fetchone()[0]
+    if user_id != teacher_id:
+        return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
+    try:
+        sql = "delete from questions where questions.id = :question_id"
+        db.session.execute(sql, {"question_id":question_id})
+        db.session.commit()
+    except:
+        return render_template("error.html", message="Tehtävän poistaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+    return redirect("/course/" + str(course_id) + "/edit")
+
 
 @app.route("/frame")
 def frame():
@@ -291,3 +309,5 @@ def frame():
 # tietojen poistaminen: käyttäjätunnus, kurssi, kurssin tehtävä
 # kurssille kenttä, joka kertoo luokan (esim. nominien taivutus, verbien taivutus), ja/tai ehkä asiasanoja?
 # placeholderit lomakekenttiin
+#profiilinäkymän muutos id:ttömäksi?
+#tietokantaan indeksejä?
