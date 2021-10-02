@@ -54,4 +54,5 @@ def logout():
     del session["user_id"]
     del session["username"]
     del session["role"]
+    del session["csrf_token"]
     return True

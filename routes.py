@@ -1,8 +1,8 @@
+import math
 from flask import redirect, render_template, request, session, abort
 from app import app
 from db import db
 import users
-import math
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -21,10 +21,10 @@ def register():
         first_name = request.form["first-name"]
         last_name = request.form["last-name"]
         if password1 != password2:
-            return render_template("error.html", message="Salasanat eivät täsmää.")
+            return render_template("error.html", message="Salasanat eivät täsmää.", back="/register")
         if users.register(username, password1, 'user', first_name, last_name):
             return redirect("/")
-        return render_template("error.html", message="Rekisteröinti ei onnistunut.")
+        return render_template("error.html", message="Rekisteröinti ei onnistunut.", back="/register")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -36,15 +36,15 @@ def login():
         password = request.form["password"]
         if users.login(username, password):
             return redirect("/")
-        return render_template("error.html", message="Väärä käyttäjätunnus tai salasana")
-    return render_template("error.html", message="Toiminto ei ole sallittu.")
+        return render_template("error.html", message="Väärä käyttäjätunnus tai salasana", back="/")
+    return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
 
 
 @app.route("/logout")
 def logout():
     if users.logout():
         return redirect("/")
-    return render_template("error.html", message="Uloskirjautuminen ei onnistunut.")
+    return render_template("error.html", message="Uloskirjautuminen ei onnistunut.", back="/")
 
 
 @app.route("/courses/")
@@ -70,7 +70,7 @@ def profile(id):
     elif users.user_id() == id:
         allow = True
     if not allow:
-        return render_template("error.html", message="Pääsy kielletty.")
+        return render_template("error.html", message="Pääsy kielletty.", back="/")
     elif users.is_teacher():
         sql = "select courses.id, courses.subject, courses.description, courses.exercises from courses where courses.teacher_id = :user_id"
         result = db.session.execute(sql, {"user_id": user_id})
@@ -110,7 +110,7 @@ def answer(id):
                            "course_id": current_course, "is_correct": is_correct})
         db.session.commit()
     except:
-        return render_template("error.html", message='Vastauksen lähettäminen ei onnistunut.')
+        return render_template("error.html", message='Vastauksen lähettäminen ei onnistunut.', back="/course/" + str(current_course))
     return render_template("answer.html", answer=current_answer, id=id, correct=correct, course=current_course)
 
 
@@ -122,7 +122,7 @@ def course(id):
     result = db.session.execute(sql, {"user_id": user_id, "id": id})
     enrolled = result.fetchone()
     if not enrolled:
-        return render_template("error.html", message='Ilmoittaudu kurssille')
+        return redirect("/course/" + str(id) + "/confirm")
     sql = "select questions.id from questions where questions.course_id = :id"
     result = db.session.execute(sql, {"id": id})
     questions = result.fetchall()
@@ -135,13 +135,14 @@ def course(id):
 @app.route("/course/<int:id>/edit")
 def edit(id):
     user_id = users.user_id()
+    if user_id == 0:
+        return redirect("/login")
     sql = "select courses.teacher_id, courses.subject, courses.description from courses where courses.id = :id"
     result = db.session.execute(sql, {"id": id})
     course = result.fetchone()
     teacher_id = course.teacher_id
-    print("teacher_id ", teacher_id)
     if user_id != teacher_id:
-        return render_template("error.html", message='Pääsy kielletty.')
+        return render_template("error.html", message='Pääsy kielletty.', back="/profile/" + str(user_id))
     sql = "select questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id where questions.course_id = :id"
     result = db.session.execute(sql, {"id": id})
     questions = result.fetchall()
@@ -173,7 +174,7 @@ def add(id):
             db.session.commit()
             lemma_id = result.fetchone()[0]
     else:
-        return render_template("error.html", message="Syötteen täytyy olla 2 - 50 merkkiä pitkä.")
+        return render_template("error.html", message="Syötteen täytyy olla 2 - 50 merkkiä pitkä.", back=request.referrer)
     sql = "select definitions.id from definitions where definitions.definition = :definition"
     result = db.session.execute(sql, {"definition": definition})
     definition_id = result.fetchone()[0]
@@ -195,7 +196,7 @@ def change(id):
     subject = request.form["subject"]
     description = request.form["description"]
     if len(subject) > 50 or len(description) > 200:
-        return render_template("error.html", message="Syöte saa olla enintään 50 merkkiä pitkä.")
+        return render_template("error.html", message="Syöte saa olla enintään 50 merkkiä pitkä.", back=request.referrer)
     if subject != '' and description == '':
         sql = "update courses set subject = :subject where id = :id"
         db.session.execute(sql, {"id": id, "subject": subject})
@@ -214,44 +215,58 @@ def change(id):
 
 @app.route("/course/<int:id>/statistics/<int:user>")
 def statistics(id, user):
+    user_id = users.user_id()
+    if user_id == 0:
+        return redirect("/login")
+    if user != user_id:
+        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
     sql = "select count(answers.id) as count, answers.correct, answers.course_id, answers.user_id, courses.subject from answers join courses on courses.id = answers.course_id group by answers.correct, answers.course_id, answers.user_id, courses.subject having answers.course_id = :id and answers.user_id = :user"
     result = db.session.execute(sql, {"id": id, "user": user})
     answers = result.fetchall()
+    if not answers:
+        return render_template("error.html", message="Et ole vielä vastannut yhteenkään tehtävään.", back="/profile/" + str(user))
     correct_answers = 0
     incorrect_answers = 0
+    success_rate = 0
     for answer in answers:
         if answer.correct:
             correct_answers = answer.count
         else:
             incorrect_answers = answer.count
     answers_total = correct_answers + incorrect_answers
-    success_rate = math.floor(correct_answers / answers_total * 100)
+    if answers_total != 0:
+        success_rate = math.floor(correct_answers / answers_total * 100)
     subject = answers[0].subject
-    return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject)
+    return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back="/profile/" + str(user))
 
 
 @app.route("/course/<int:id>/enroll")
 def enroll(id):
     user_id = users.user_id()
-    sql = "select enrollments.id from enrollments \
-        where user_id = :user_id and course_id = :id"
-    result = db.session.execute(sql, {"user_id": user_id, "id": id})
-    enrolled = result.fetchone()
-    if enrolled:
-        return render_template("error.html", message="Olet jo ilmoittautunut tälle kurssille.")
+    if user_id == 0:
+        return redirect("/login")
     try:
         sql = "insert into enrollments (user_id, course_id, entered) \
             values (:user_id, :course_id, NOW())"
         db.session.execute(sql, {"course_id": id, "user_id": user_id})
         db.session.commit()
     except:
-        return render_template("error.html", message='Ilmoittautuminen ei onnistunut.')
+        return render_template("error.html", message='Ilmoittautuminen ei onnistunut.', back="/profile/" + str(user_id))
     return redirect("/course/" + str(id))
 
 
 @app.route("/course/<int:id>/confirm")
 def confirm(id):
-    message = 'Haluatko varmasti ilmoittautua kurssille?'
+    user_id = users.user_id()
+    if user_id == 0:
+        return redirect("/login")
+    sql = "select enrollments.id from enrollments \
+        where user_id = :user_id and course_id = :id"
+    result = db.session.execute(sql, {"user_id": user_id, "id": id})
+    enrolled = result.fetchone()
+    if enrolled:
+        return render_template("error.html", message="Olet jo ilmoittautunut tälle kurssille.", back="/courses")
+    message = 'Haluatko ilmoittautua kurssille?'
     return render_template("confirm.html", message=message, id=id)
 
 
@@ -272,7 +287,7 @@ def frame():
     return render_template("frame.html")
 
 # TODO
-# etusivulle jotain uusimmat tapahtumat tms.
+# etusivulle jotain, uusimmat tapahtumat tms.
 # tietojen poistaminen: käyttäjätunnus, kurssi, kurssin tehtävä
 # kurssille kenttä, joka kertoo luokan (esim. nominien taivutus, verbien taivutus), ja/tai ehkä asiasanoja?
 # placeholderit lomakekenttiin
