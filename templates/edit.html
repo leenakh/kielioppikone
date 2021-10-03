@@ -3,7 +3,10 @@
 {% block content %}
 
 <h2>{{ course.subject }}</h2>
-<div style="margin-left: 20px;"><i>{{ course.description }}</i></div>
+<div style="margin-left: 20px;">
+    <i>{{ course.description }}</i><br>
+    <b>{{ exercises }} tehtävää</b>
+</div>
 <hr>
 <h3>Kurssin tehtävät</h3>
 <div class="container">

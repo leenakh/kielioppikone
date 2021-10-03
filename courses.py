@@ -23,6 +23,18 @@ def get_teacher(course_id):
     return result.fetchone()[0]
 
 
+def get_teachers_courses(user_id):
+    sql = "select courses.id, courses.subject, courses.description, courses.exercises from courses where courses.teacher_id = :user_id"
+    result = db.session.execute(sql, {"user_id": user_id})
+    return result.fetchall()
+
+
+def get_users_courses(user_id):
+    sql = "select courses.id, courses.subject, courses.description, courses.exercises, enrollments.course_id from courses join enrollments on enrollments.course_id = courses.id where enrollments.user_id = :user_id"
+    result = db.session.execute(sql, {"user_id": user_id})
+    return result.fetchall()
+
+
 def update_exercise_count(id, operation):
     if operation == "increment":
         try:

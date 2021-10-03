@@ -70,14 +70,10 @@ def profile(id):
         allow = True
     if not allow:
         return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
-    elif users.is_teacher():
-        sql = "select courses.id, courses.subject, courses.description, courses.exercises from courses where courses.teacher_id = :user_id"
-        result = db.session.execute(sql, {"user_id": user_id})
-        users_courses = result.fetchall()
+    if users.is_teacher():
+        users_courses = courses.get_teachers_courses(user_id)
     else:
-        sql = "select courses.id, courses.subject, courses.description, courses.exercises, enrollments.course_id from courses join enrollments on enrollments.course_id = courses.id where enrollments.user_id = :user_id"
-        result = db.session.execute(sql, {"user_id": user_id})
-        users_courses = result.fetchall()
+        users_courses = courses.get_users_courses(user_id)
         sql = "select count(answers.id), answers.correct, answers.user_id from answers group by answers.correct, answers.user_id having answers.user_id = :user_id"
         result = db.session.execute(sql, {"user_id": user_id})
         answers = result.fetchall()
@@ -150,7 +146,7 @@ def edit(id):
     sql = "select definitions.definition from definitions"
     result = db.session.execute(sql)
     definitions = result.fetchall()
-    return render_template("edit.html", questions=questions, id=id, words=words, definitions=definitions, course=course)
+    return render_template("edit.html", questions=questions, exercises=len(questions), id=id, words=words, definitions=definitions, course=course)
 
 
 @app.route("/course/<int:id>/edit/add", methods=["GET", "POST"])
