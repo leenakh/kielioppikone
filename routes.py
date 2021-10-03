@@ -4,6 +4,7 @@ from app import app
 from db import db
 import users
 import courses
+import enrollments
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -110,17 +111,13 @@ def answer(id):
     return render_template("answer.html", answer=current_answer, id=id, correct=correct, course=current_course)
 
 
-@app.route("/course/<int:id>")
-def course(id):
+@app.route("/course/<int:course_id>")
+def course(course_id):
     user_id = users.user_id()
-    sql = "select enrollments.id from enrollments \
-        where user_id = :user_id and course_id = :id"
-    result = db.session.execute(sql, {"user_id": user_id, "id": id})
-    enrolled = result.fetchone()
-    if not enrolled:
-        return redirect("/course/" + str(id) + "/confirm")
-    sql = "select questions.id from questions where questions.course_id = :id"
-    result = db.session.execute(sql, {"id": id})
+    if not enrollments.enrolled(user_id, course_id):
+        return redirect("/course/" + str(course_id) + "/confirm")
+    sql = "select questions.id from questions where questions.course_id = :course_id"
+    result = db.session.execute(sql, {"course_id": course_id})
     questions = result.fetchall()
     sql = "select question_id from answers where user_id = :user_id and correct = true"
     result = db.session.execute(sql, {"user_id": user_id})
@@ -221,34 +218,25 @@ def statistics(id, user):
     return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back="/profile/" + str(user))
 
 
-@app.route("/course/<int:id>/enroll")
-def enroll(id):
+@app.route("/course/<int:course_id>/enroll")
+def enroll(course_id):
     user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    try:
-        sql = "insert into enrollments (user_id, course_id, entered) \
-            values (:user_id, :course_id, NOW())"
-        db.session.execute(sql, {"course_id": id, "user_id": user_id})
-        db.session.commit()
-    except:
+    if not enrollments.enroll(user_id, course_id):
         return render_template("error.html", message='Ilmoittautuminen ei onnistunut.', back="/profile/" + str(user_id))
-    return redirect("/course/" + str(id))
+    return redirect("/course/" + str(course_id))
 
 
-@app.route("/course/<int:id>/confirm")
-def confirm(id):
+@app.route("/course/<int:course_id>/confirm")
+def confirm(course_id):
     user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    sql = "select enrollments.id from enrollments \
-        where user_id = :user_id and course_id = :id"
-    result = db.session.execute(sql, {"user_id": user_id, "id": id})
-    enrolled = result.fetchone()
-    if enrolled:
+    if enrollments.enrolled(user_id, course_id):
         return render_template("error.html", message="Olet jo ilmoittautunut tälle kurssille.", back="/courses")
     message = 'Haluatko ilmoittautua kurssille?'
-    return render_template("confirm.html", message=message, id=id)
+    return render_template("confirm.html", message=message, id=course_id)
 
 
 @app.route("/question/<int:id>")
