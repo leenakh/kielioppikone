@@ -59,6 +59,8 @@ def courses():
 
 @app.route("/profile/<int:id>")
 def profile(id):
+    if not users.logged_in():
+        return redirect("/login")
     correct_answers = 0
     incorrect_answers = 0
     success_rate = 0
@@ -67,10 +69,10 @@ def profile(id):
     allow = False
     if users.is_admin():
         allow = True
-    elif users.user_id() == id:
+    elif users.owner_of(id):
         allow = True
     if not allow:
-        return render_template("error.html", message="Pääsy kielletty.", back="/")
+        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
     elif users.is_teacher():
         sql = "select courses.id, courses.subject, courses.description, courses.exercises from courses where courses.teacher_id = :user_id"
         result = db.session.execute(sql, {"user_id": user_id})
@@ -135,13 +137,13 @@ def course(id):
 @app.route("/course/<int:id>/edit")
 def edit(id):
     user_id = users.user_id()
-    if user_id == 0:
+    if not users.logged_in():
         return redirect("/login")
     sql = "select courses.teacher_id, courses.subject, courses.description from courses where courses.id = :id"
     result = db.session.execute(sql, {"id": id})
     course = result.fetchone()
     teacher_id = course.teacher_id
-    if user_id != teacher_id:
+    if not users.owner_of(teacher_id):
         return render_template("error.html", message='Pääsy kielletty.', back="/profile/" + str(user_id))
     sql = "select count(answers.id) as answers, questions.id, questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id left join answers on questions.id = answers.question_id group by questions.id, questions.inflection, questions.course_id, words.lemma having questions.course_id = :id"
     result = db.session.execute(sql, {"id": id})
@@ -216,9 +218,9 @@ def change(id):
 @app.route("/course/<int:id>/statistics/<int:user>")
 def statistics(id, user):
     user_id = users.user_id()
-    if user_id == 0:
+    if not users.logged_in():
         return redirect("/login")
-    if user != user_id:
+    if not users.owner_of(user):
         return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
     sql = "select count(answers.id) as count, answers.correct, answers.course_id, answers.user_id, courses.subject from answers join courses on courses.id = answers.course_id group by answers.correct, answers.course_id, answers.user_id, courses.subject having answers.course_id = :id and answers.user_id = :user"
     result = db.session.execute(sql, {"id": id, "user": user})
@@ -243,7 +245,7 @@ def statistics(id, user):
 @app.route("/course/<int:id>/enroll")
 def enroll(id):
     user_id = users.user_id()
-    if user_id == 0:
+    if not users.logged_in():
         return redirect("/login")
     try:
         sql = "insert into enrollments (user_id, course_id, entered) \
@@ -258,7 +260,7 @@ def enroll(id):
 @app.route("/course/<int:id>/confirm")
 def confirm(id):
     user_id = users.user_id()
-    if user_id == 0:
+    if not users.logged_in():
         return redirect("/login")
     sql = "select enrollments.id from enrollments \
         where user_id = :user_id and course_id = :id"
@@ -284,12 +286,12 @@ def question(id):
 @app.route("/course/<int:course_id>/question/<int:question_id>/remove")
 def remove(course_id, question_id):
     user_id = users.user_id()
-    if user_id == 0:
+    if not users.logged_in():
         return redirect("/login")
     sql = "select courses.teacher_id from courses where id = :course_id"
     result = db.session.execute(sql, {"course_id":course_id})
     teacher_id = result.fetchone()[0]
-    if user_id != teacher_id:
+    if not users.owner_of(teacher_id):
         return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
     try:
         sql = "delete from questions where questions.id = :question_id"

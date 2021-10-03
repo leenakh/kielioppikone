@@ -11,7 +11,7 @@ def register(username, password, role, first_name, last_name):
             sql = "INSERT INTO users (username, password, role, first_name, last_name) \
                 VALUES (:username, :password, :role, :first_name, :last_name)"
             db.session.execute(
-                sql, {"username":username, "password":hash_value, "role":role, "first_name":first_name, "last_name":last_name})
+                sql, {"username": username, "password": hash_value, "role": role, "first_name": first_name, "last_name": last_name})
             db.session.commit()
         except:
             return False
@@ -36,6 +36,7 @@ def login(username, password):
 def user_id():
     return session.get("user_id", 0)
 
+
 def username():
     return session.get("username", 0)
 
@@ -47,8 +48,10 @@ def is_user():
 def is_admin():
     return session.get("role") == "admin"
 
+
 def is_teacher():
     return session.get("role") == "teacher"
+
 
 def logout():
     del session["user_id"]
@@ -56,3 +59,11 @@ def logout():
     del session["role"]
     del session["csrf_token"]
     return True
+
+
+def logged_in():
+    return user_id() != 0
+
+
+def owner_of(id):
+    return user_id() == id
