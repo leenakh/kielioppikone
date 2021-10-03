@@ -3,6 +3,7 @@ from flask import redirect, render_template, request, session, abort
 from app import app
 from db import db
 import users
+import courses
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -48,12 +49,8 @@ def logout():
 
 
 @app.route("/courses/")
-def courses():
-    sql = "select courses.id, courses.teacher_id, courses.subject, courses.description, courses.exercises, \
-        users.first_name, users.last_name from courses \
-        left join users on courses.teacher_id = users.id"
-    result = db.session.execute(sql)
-    courses_list = result.fetchall()
+def get_courses():
+    courses_list = courses.get_courses()
     return render_template("courses.html", courses=courses_list)
 
 
@@ -90,7 +87,8 @@ def profile(id):
             else:
                 incorrect_answers = answer.count
         answers_total = correct_answers + incorrect_answers
-        success_rate = math.floor(correct_answers / answers_total * 100)
+        if answers_total != 0:
+            success_rate = math.floor(correct_answers / answers_total * 100)
     return render_template("profile.html", user=user_id, username=username, courses=users_courses, is_user=users.is_user(), is_teacher=users.is_teacher(), is_admin=users.is_admin(), correct=correct_answers, incorrect=incorrect_answers, success=success_rate)
 
 
@@ -139,9 +137,7 @@ def edit(id):
     user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    sql = "select courses.teacher_id, courses.subject, courses.description from courses where courses.id = :id"
-    result = db.session.execute(sql, {"id": id})
-    course = result.fetchone()
+    course = courses.get_course(id)
     teacher_id = course.teacher_id
     if not users.owner_of(teacher_id):
         return render_template("error.html", message='Pääsy kielletty.', back="/profile/" + str(user_id))
@@ -185,10 +181,8 @@ def add(id):
     db.session.execute(sql, {"id": id, "lemma_id": lemma_id,
                        "definition_id": definition_id, "inflection": inflection})
     db.session.commit()
-    sql = "update courses set exercises = exercises + 1 where courses.id = :id"
-    db.session.execute(sql, {"id": id})
-    db. session.commit()
-    return redirect("/course/" + str(id) + "/edit")
+    if courses.update_exercise_count(id, "increment"):
+        return redirect("/course/" + str(id) + "/edit")
 
 
 @app.route("/course/<int:id>/edit/change", methods=["POST"])
@@ -198,20 +192,9 @@ def change(id):
     subject = request.form["subject"]
     description = request.form["description"]
     if len(subject) > 50 or len(description) > 200:
-        return render_template("error.html", message="Syöte saa olla enintään 50 merkkiä pitkä.", back=request.referrer)
-    if subject != '' and description == '':
-        sql = "update courses set subject = :subject where id = :id"
-        db.session.execute(sql, {"id": id, "subject": subject})
-        db.session.commit()
-    elif description != '' and subject == '':
-        sql = "update courses set description = :description where id = :id"
-        db.session.execute(sql, {"id": id, "description": description})
-        db.session.commit()
-    elif subject != '' and description != '':
-        sql = "update courses set description = :description, subject = :subject where id = :id"
-        db.session.execute(
-            sql, {"id": id, "subject": subject, "description": description})
-        db.session.commit()
+        return render_template("error.html", message="Syöte saa olla enintään 50 merkkiä pitkä.", back="/course/" + str(id) + "/edit")
+    if not courses.update_course_info(id, subject, description):
+        return render_template("error.html", message="Kurssin tietojen muuttaminen ei onnistunut.", back="/course/" + str(id) + "/edit")
     return redirect("/course/" + str(id) + "/edit")
 
 
@@ -285,12 +268,9 @@ def question(id):
 
 @app.route("/course/<int:course_id>/question/<int:question_id>/remove")
 def remove(course_id, question_id):
-    user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    sql = "select courses.teacher_id from courses where id = :course_id"
-    result = db.session.execute(sql, {"course_id":course_id})
-    teacher_id = result.fetchone()[0]
+    teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
         return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
     try:
@@ -299,6 +279,7 @@ def remove(course_id, question_id):
         db.session.commit()
     except:
         return render_template("error.html", message="Tehtävän poistaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+    courses.update_exercise_count(course_id, "reduce")
     return redirect("/course/" + str(course_id) + "/edit")
 
 
