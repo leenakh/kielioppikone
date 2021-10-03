@@ -5,6 +5,7 @@ from db import db
 import users
 import courses
 import enrollments
+import questions
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -116,38 +117,34 @@ def course(course_id):
     user_id = users.user_id()
     if not enrollments.enrolled(user_id, course_id):
         return redirect("/course/" + str(course_id) + "/confirm")
-    sql = "select questions.id from questions where questions.course_id = :course_id"
-    result = db.session.execute(sql, {"course_id": course_id})
-    questions = result.fetchall()
+    questions_list = questions.get_questions(course_id)
     sql = "select question_id from answers where user_id = :user_id and correct = true"
     result = db.session.execute(sql, {"user_id": user_id})
     correct_answers = result.fetchall()
-    return render_template("course.html", questions=questions, correct_answers=correct_answers)
+    return render_template("course.html", questions_list=questions_list, correct_answers=correct_answers)
 
 
-@app.route("/course/<int:id>/edit")
-def edit(id):
+@app.route("/course/<int:course_id>/edit")
+def edit(course_id):
     user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    course = courses.get_course(id)
+    course = courses.get_course(course_id)
     teacher_id = course.teacher_id
     if not users.owner_of(teacher_id):
         return render_template("error.html", message='Pääsy kielletty.', back="/profile/" + str(user_id))
-    sql = "select count(answers.id) as answers, questions.id, questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id left join answers on questions.id = answers.question_id group by questions.id, questions.inflection, questions.course_id, words.lemma having questions.course_id = :id"
-    result = db.session.execute(sql, {"id": id})
-    questions = result.fetchall()
+    course_questions = questions.get_course_questions(course_id)
     sql = "select words.lemma from words"
     result = db.session.execute(sql)
     words = result.fetchall()
     sql = "select definitions.definition from definitions"
     result = db.session.execute(sql)
     definitions = result.fetchall()
-    return render_template("edit.html", questions=questions, exercises=len(questions), id=id, words=words, definitions=definitions, course=course)
+    return render_template("edit.html", course_questions=course_questions, exercises=len(course_questions), course_id=course_id, words=words, definitions=definitions, course=course)
 
 
-@app.route("/course/<int:id>/edit/add", methods=["GET", "POST"])
-def add(id):
+@app.route("/course/<int:course_id>/edit/add", methods=["GET", "POST"])
+def add(course_id):
     if session["csrf_token"] != request.form["csrf_token"]:
         abort(403)
     lemma = request.form["lemma"]
@@ -169,13 +166,9 @@ def add(id):
     sql = "select definitions.id from definitions where definitions.definition = :definition"
     result = db.session.execute(sql, {"definition": definition})
     definition_id = result.fetchone()[0]
-    sql = "insert into questions (course_id, word_id, definition_id, inflection) \
-        values (:id, :lemma_id, :definition_id, :inflection)"
-    db.session.execute(sql, {"id": id, "lemma_id": lemma_id,
-                       "definition_id": definition_id, "inflection": inflection})
-    db.session.commit()
-    if courses.update_exercise_count(id, "increment"):
-        return redirect("/course/" + str(id) + "/edit")
+    if questions.add_question(course_id, lemma_id, definition_id, inflection):
+        courses.update_exercise_count(course_id, "increment")
+    return redirect("/course/" + str(course_id) + "/edit")
 
 
 @app.route("/course/<int:id>/edit/change", methods=["POST"])
@@ -239,16 +232,11 @@ def confirm(course_id):
     return render_template("confirm.html", message=message, id=course_id)
 
 
-@app.route("/question/<int:id>")
-def question(id):
-    sql = "select definitions.definition, words.lemma, questions.inflection, questions.course_id, questions.id \
-        from questions \
-        inner join definitions on questions.definition_id = definitions.id \
-        inner join words on words.id = questions.word_id \
-        where questions.id = :id"
-    result = db.session.execute(sql, {"id": id})
-    current_question = result.fetchone()
+@app.route("/question/<int:question_id>")
+def question(question_id):
+    current_question = questions.get_question(question_id)
     return render_template("question.html", question=current_question)
+
 
 @app.route("/course/<int:course_id>/question/<int:question_id>/remove")
 def remove(course_id, question_id):
@@ -257,11 +245,7 @@ def remove(course_id, question_id):
     teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
         return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
-    try:
-        sql = "delete from questions where questions.id = :question_id"
-        db.session.execute(sql, {"question_id":question_id})
-        db.session.commit()
-    except:
+    if not questions.remove_question(question_id):
         return render_template("error.html", message="Tehtävän poistaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
     courses.update_exercise_count(course_id, "reduce")
     return redirect("/course/" + str(course_id) + "/edit")

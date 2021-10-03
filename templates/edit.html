@@ -11,12 +11,12 @@
 <h3>Kurssin tehtävät</h3>
 <div class="container">
     <table>
-        {% for question in questions %}
+        {% for question in course_questions %}
         <tr>
             <td style="min-width: 100px;">{{ question.lemma }}</td>
             <td>{{ question.inflection }}</td>
             {% if question.answers == 0 %}
-            <td><a href="/course/{{id}}/question/{{question.id}}/remove">Poista</a></td>
+            <td><a href="/course/{{course_id}}/question/{{question.id}}/remove">Poista</a></td>
             {% endif %}
         </tr>
         {% endfor %}
@@ -32,7 +32,7 @@
 </datalist>
 
 <div class="container">
-    <form action="/course/{{id}}/edit/add" method="POST">
+    <form action="/course/{{course_id}}/edit/add" method="POST">
         <p>Sanan perusmuoto: <input list="lemmas" type="text" name="lemma"></p>
         <p>Taipunut muoto: <input type="text" name="inflection"></p>
         <p>Määritelmä:<br>

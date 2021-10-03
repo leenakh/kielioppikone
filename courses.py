@@ -35,18 +35,18 @@ def get_users_courses(user_id):
     return result.fetchall()
 
 
-def update_exercise_count(id, operation):
+def update_exercise_count(course_id, operation):
     if operation == "increment":
         try:
-            sql = "update courses set exercises = exercises + 1 where courses.id = :id"
-            db.session.execute(sql, {"id": id})
+            sql = "update courses set exercises = exercises + 1 where courses.id = :course_id"
+            db.session.execute(sql, {"course_id": course_id})
             db. session.commit()
         except:
             return False
     elif operation == "reduce":
         try:
-            sql = "update courses set exercises = exercises - 1 where courses.id = :id"
-            db.session.execute(sql, {"id": id})
+            sql = "update courses set exercises = exercises - 1 where courses.id = :course_id"
+            db.session.execute(sql, {"course_id": course_id})
             db. session.commit()
         except:
             return False
@@ -90,5 +90,3 @@ def update_course_info(id, subject, description):
         except:
             return False
     return True
-
-

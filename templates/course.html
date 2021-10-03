@@ -4,14 +4,14 @@
 
 <h1>Tehtävät</h1>
 
-{% for question in questions %}
+{% for question in questions_list %}
 {% if question in correct_answers %}
 <a href="/question/{{question.id}}" target="frame">
-    <div class="marked">{{ questions.index(question)+1 }}</div>
+    <div class="marked">{{ questions_list.index(question)+1 }}</div>
 </a>
 {% else %}
 <a href="/question/{{question.id}}" target="frame">
-    <div class="container">{{ questions.index(question)+1 }}</div>
+    <div class="container">{{ questions_list.index(question)+1 }}</div>
 </a>
 </div>
 {% endif %}

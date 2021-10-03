@@ -17,5 +17,3 @@ def enroll(user_id, course_id):
     except:
         return False
     return True
-
-
