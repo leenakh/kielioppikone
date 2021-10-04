@@ -6,6 +6,8 @@ import users
 import courses
 import enrollments
 import questions
+import words
+import definitions
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -134,13 +136,9 @@ def edit(course_id):
     if not users.owner_of(teacher_id):
         return render_template("error.html", message='Pääsy kielletty.', back="/profile/" + str(user_id))
     course_questions = questions.get_course_questions(course_id)
-    sql = "select words.lemma from words"
-    result = db.session.execute(sql)
-    words = result.fetchall()
-    sql = "select definitions.definition from definitions"
-    result = db.session.execute(sql)
-    definitions = result.fetchall()
-    return render_template("edit.html", course_questions=course_questions, exercises=len(course_questions), course_id=course_id, words=words, definitions=definitions, course=course)
+    words_list = words.get_all()
+    definitions_list = definitions.get_all()
+    return render_template("edit.html", course_questions=course_questions, exercises=len(course_questions), course_id=course_id, words=words_list, definitions=definitions_list, course=course)
 
 
 @app.route("/course/<int:course_id>/edit/add", methods=["GET", "POST"])
@@ -153,19 +151,12 @@ def add(course_id):
     lemma_id = 0
     if 1 < len(lemma) < 51 and 1 < len(inflection) < 51 and len(definition) < 51:
         try:
-            sql = "select words.id from words where words.lemma = :lemma"
-            result = db.session.execute(sql, {"lemma": lemma})
-            lemma_id = result.fetchone()[0]
+            lemma_id = words.get_id(lemma)
         except:
-            sql = "insert into words (lemma) values (:lemma) returning id"
-            result = db.session.execute(sql, {"lemma": lemma})
-            db.session.commit()
-            lemma_id = result.fetchone()[0]
+            lemma_id = words.add(lemma)
     else:
         return render_template("error.html", message="Syötteen täytyy olla 2 - 50 merkkiä pitkä.", back=request.referrer)
-    sql = "select definitions.id from definitions where definitions.definition = :definition"
-    result = db.session.execute(sql, {"definition": definition})
-    definition_id = result.fetchone()[0]
+    definition_id = definitions.get_id(definition)
     if questions.add_question(course_id, lemma_id, definition_id, inflection):
         courses.update_exercise_count(course_id, "increment")
     return redirect("/course/" + str(course_id) + "/edit")
