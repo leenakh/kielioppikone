@@ -1,13 +1,12 @@
-import math
 from flask import redirect, render_template, request, session, abort
 from app import app
-from db import db
 import users
 import courses
 import enrollments
 import questions
 import words
 import definitions
+import answers
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -78,17 +77,10 @@ def profile(id):
         users_courses = courses.get_teachers_courses(user_id)
     else:
         users_courses = courses.get_users_courses(user_id)
-        sql = "select count(answers.id), answers.correct, answers.user_id from answers group by answers.correct, answers.user_id having answers.user_id = :user_id"
-        result = db.session.execute(sql, {"user_id": user_id})
-        answers = result.fetchall()
-        for answer in answers:
-            if answer.correct:
-                correct_answers = answer.count
-            else:
-                incorrect_answers = answer.count
-        answers_total = correct_answers + incorrect_answers
-        if answers_total != 0:
-            success_rate = math.floor(correct_answers / answers_total * 100)
+        users_answers = answers.get_by_user(user_id)
+        correct_answers = answers.count_correct(users_answers)
+        incorrect_answers = answers.count_incorrect(users_answers)
+        success_rate = answers.get_success_rate(correct_answers, incorrect_answers)
     return render_template("profile.html", user=user_id, username=username, courses=users_courses, is_user=users.is_user(), is_teacher=users.is_teacher(), is_admin=users.is_admin(), correct=correct_answers, incorrect=incorrect_answers, success=success_rate)
 
 
@@ -103,13 +95,7 @@ def answer(id):
     user_id = users.user_id()
     if current_answer != correct:
         is_correct = False
-    try:
-        sql = "insert into answers (user_id, question_id, course_id, answered, correct) \
-            values (:user_id, :question_id, :course_id, NOW(), :is_correct)"
-        db.session.execute(sql, {"user_id": user_id, "question_id": id,
-                           "course_id": current_course, "is_correct": is_correct})
-        db.session.commit()
-    except:
+    if not answers.add(user_id, id, current_course, is_correct):
         return render_template("error.html", message='Vastauksen lähettäminen ei onnistunut.', back="/course/" + str(current_course))
     return render_template("answer.html", answer=current_answer, id=id, correct=correct, course=current_course)
 
@@ -120,9 +106,7 @@ def course(course_id):
     if not enrollments.enrolled(user_id, course_id):
         return redirect("/course/" + str(course_id) + "/confirm")
     questions_list = questions.get_questions(course_id)
-    sql = "select question_id from answers where user_id = :user_id and correct = true"
-    result = db.session.execute(sql, {"user_id": user_id})
-    correct_answers = result.fetchall()
+    correct_answers = answers.get_correct(user_id)
     return render_template("course.html", questions_list=questions_list, correct_answers=correct_answers)
 
 
@@ -182,23 +166,13 @@ def statistics(id, user):
         return redirect("/login")
     if not users.owner_of(user):
         return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
-    sql = "select count(answers.id) as count, answers.correct, answers.course_id, answers.user_id, courses.subject from answers join courses on courses.id = answers.course_id group by answers.correct, answers.course_id, answers.user_id, courses.subject having answers.course_id = :id and answers.user_id = :user"
-    result = db.session.execute(sql, {"id": id, "user": user})
-    answers = result.fetchall()
-    if not answers:
+    answers_list = answers.get_by_course(user_id, id)
+    if not answers_list:
         return render_template("error.html", message="Et ole vielä vastannut yhteenkään tehtävään.", back="/profile/" + str(user))
-    correct_answers = 0
-    incorrect_answers = 0
-    success_rate = 0
-    for answer in answers:
-        if answer.correct:
-            correct_answers = answer.count
-        else:
-            incorrect_answers = answer.count
-    answers_total = correct_answers + incorrect_answers
-    if answers_total != 0:
-        success_rate = math.floor(correct_answers / answers_total * 100)
-    subject = answers[0].subject
+    correct_answers = answers.count_correct(answers_list)
+    incorrect_answers = answers.count_incorrect(answers_list)
+    success_rate = answers.get_success_rate(correct_answers, incorrect_answers)
+    subject = answers_list[0].subject
     return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back="/profile/" + str(user))
 
 
@@ -253,3 +227,4 @@ def frame():
 # placeholderit lomakekenttiin
 #profiilinäkymän muutos id:ttömäksi?
 #tietokantaan indeksejä?
+#vastauskenttä saisi unohtaa käyttäjän aiemmat vastaukset
