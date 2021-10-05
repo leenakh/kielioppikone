@@ -9,6 +9,17 @@ import definitions
 import answers
 
 
+def validate_token(token):
+    if session["csrf_token"] != token:
+        abort(403)
+
+
+def valid_input(min_length, max_length, user_input):
+    if min_length <= len(user_input) <= max_length:
+        return True
+    return False
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     return render_template("index.html")
@@ -65,7 +76,6 @@ def profile(id):
     incorrect_answers = 0
     success_rate = 0
     user_id = users.user_id()
-    username = users.username()
     allow = False
     if users.is_admin():
         allow = True
@@ -81,13 +91,12 @@ def profile(id):
         correct_answers = answers.count_correct(users_answers)
         incorrect_answers = answers.count_incorrect(users_answers)
         success_rate = answers.get_success_rate(correct_answers, incorrect_answers)
-    return render_template("profile.html", user=user_id, username=username, courses=users_courses, is_user=users.is_user(), is_teacher=users.is_teacher(), is_admin=users.is_admin(), correct=correct_answers, incorrect=incorrect_answers, success=success_rate)
+    return render_template("profile.html", user=user_id, courses=users_courses, is_user=users.is_user(), is_teacher=users.is_teacher(), is_admin=users.is_admin(), correct=correct_answers, incorrect=incorrect_answers, success=success_rate)
 
 
 @app.route("/answer/<int:id>", methods=["POST"])
 def answer(id):
-    if session["csrf_token"] != request.form["csrf_token"]:
-        abort(403)
+    validate_token(request.form["csrf_token"])
     current_answer = request.form["answer"]
     correct = request.form["correct"]
     current_course = request.form["course"]
@@ -127,13 +136,12 @@ def edit(course_id):
 
 @app.route("/course/<int:course_id>/edit/add", methods=["GET", "POST"])
 def add(course_id):
-    if session["csrf_token"] != request.form["csrf_token"]:
-        abort(403)
+    validate_token(request.form["csrf_token"])
     lemma = request.form["lemma"]
     inflection = request.form["inflection"]
     definition = request.form["definition"]
     lemma_id = 0
-    if 1 < len(lemma) < 51 and 1 < len(inflection) < 51 and len(definition) < 51:
+    if valid_input(2, 50, lemma) and valid_input(2, 50, inflection):
         try:
             lemma_id = words.get_id(lemma)
         except:
@@ -148,10 +156,10 @@ def add(course_id):
 
 @app.route("/course/<int:id>/edit/change", methods=["POST"])
 def change(id):
-    if session["csrf_token"] != request.form["csrf_token"]:
-        abort(403)
+    validate_token(request.form["csrf_token"])
     subject = request.form["subject"]
     description = request.form["description"]
+    #if not valid_input(0, 50, subject) or not valid_input(0, 50, description):
     if len(subject) > 50 or len(description) > 200:
         return render_template("error.html", message="Syöte saa olla enintään 50 merkkiä pitkä.", back="/course/" + str(id) + "/edit")
     if not courses.update_course_info(id, subject, description):
