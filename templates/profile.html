@@ -5,9 +5,27 @@
 {% if is_user %}
 <h3>Tilasto (kaikki kurssit)</h3>
 <div class="container">
-Olet vastannut oikein {{ correct }} kertaa.<br>
-Olet vastannut väärin {{ incorrect }} kertaa.<br>
-Vastauksistasi {{ success }} % on oikein.<br>
+    Olet vastannut oikein {{ correct }} kertaa.<br>
+    Olet vastannut väärin {{ incorrect }} kertaa.<br>
+    Vastauksistasi {{ success }} % on oikein.<br>
+</div>
+{% endif %}
+
+{% if is_teacher %}
+<h3>Lisää uusi kurssi</h3>
+<div class="container">
+    <form action="/courses/add" method="POST">
+        <p>
+            <label>Otsikko: </label><input type="text" name="subject">
+        </p>
+        <p>
+            <label>Kuvaus: </label><input type="text" name="description">
+        </p>
+        <p>
+            <input type="submit" value="Lähetä">
+        </p>
+        <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+    </form>
 </div>
 {% endif %}
 
@@ -17,13 +35,14 @@ Vastauksistasi {{ success }} % on oikein.<br>
 
     <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
     {{ course.description }}<br>
-    <b>{{ course.exercises }} tehtävää</b>
+    <b>{{ course.exercises }} tehtävää</b><br>
     {% if is_teacher %}
+    <a href="/course/{{course.id}}/pupils">Osallistujat</a>
     <a href="/course/{{ course.id }}/edit" style="float:right">Muokkaa</a>
     {% elif is_admin %}
     <div>Hallintanäkymä</div>
     {% else %}
-    
+
     <a href="/course/{{ course.id }}/statistics/{{ user }}" style="float:right">Tilastoja</a>
     {% endif %}
 

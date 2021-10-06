@@ -20,6 +20,16 @@ def valid_input(min_length, max_length, user_input):
     return False
 
 
+@app.template_filter()
+def format(date):
+    date_parts = str(date).split(" ")
+    date_parts_final = date_parts[0].split("-")
+    day = date_parts_final[2]
+    month = date_parts_final[1]
+    year = date_parts_final[0]
+    return day + "." + month + "." + year
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     return render_template("index.html")
@@ -109,6 +119,19 @@ def answer(id):
     return render_template("answer.html", answer=current_answer, id=id, correct=correct, course=current_course)
 
 
+@app.route("/courses/add", methods=["POST"])
+def add_course():
+    validate_token(request.form["csrf_token"])
+    user_id = users.user_id()
+    subject = request.form["subject"]
+    description = request.form["description"]
+    if not valid_input(0, 50, subject) or not valid_input(0, 200, description):
+        return render_template("error.html", message="Otsikko saa olla enintään 50 merkkiä ja kuvaus enintään 200 merkkiä pitkä.", back="/profile/" + str(user_id))
+    if not courses.add(subject, description, user_id):
+        return render_template("error.html", message="Kurssin lisääminen ei onnistunut.", back="/profile/" + str(user_id))
+    return redirect("/profile/" + str(user_id))
+
+
 @app.route("/course/<int:course_id>")
 def course(course_id):
     user_id = users.user_id()
@@ -117,6 +140,15 @@ def course(course_id):
     questions_list = questions.get_questions(course_id)
     correct_answers = answers.get_correct(user_id)
     return render_template("course.html", questions_list=questions_list, correct_answers=correct_answers)
+
+
+@app.route("/course/<int:course_id>/pupils")
+def pupils(course_id):
+    user_id = users.user_id()
+    pupils_list = courses.get_users(course_id)
+    if not pupils:
+        return render_template("error.html", message="Kurssin osallistujia ei löytynyt.", back="/profile/" + str(user_id))
+    return render_template("pupils.html", pupils_list=pupils_list, course_id=course_id, user_id=user_id)
 
 
 @app.route("/course/<int:course_id>/edit")
@@ -159,9 +191,8 @@ def change(id):
     validate_token(request.form["csrf_token"])
     subject = request.form["subject"]
     description = request.form["description"]
-    #if not valid_input(0, 50, subject) or not valid_input(0, 50, description):
-    if len(subject) > 50 or len(description) > 200:
-        return render_template("error.html", message="Syöte saa olla enintään 50 merkkiä pitkä.", back="/course/" + str(id) + "/edit")
+    if not valid_input(0, 50, subject) or not valid_input(0, 200, description):
+        return render_template("error.html", message="Otsikko saa olla enintään 50 merkkiä ja kuvaus enintään 200 merkkiä pitkä.", back="/course/" + str(id) + "/edit")
     if not courses.update_course_info(id, subject, description):
         return render_template("error.html", message="Kurssin tietojen muuttaminen ei onnistunut.", back="/course/" + str(id) + "/edit")
     return redirect("/course/" + str(id) + "/edit")
@@ -172,16 +203,17 @@ def statistics(id, user):
     user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    if not users.owner_of(user):
-        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
-    answers_list = answers.get_by_course(user_id, id)
+    #if not users.owner_of(user):
+    #    return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+    answers_list = answers.get_by_course(user, id)
     if not answers_list:
-        return render_template("error.html", message="Et ole vielä vastannut yhteenkään tehtävään.", back="/profile/" + str(user))
+        return render_template("error.html", message="Et ole vielä vastannut yhteenkään tehtävään.", back="/profile/" + str(user_id))
     correct_answers = answers.count_correct(answers_list)
     incorrect_answers = answers.count_incorrect(answers_list)
     success_rate = answers.get_success_rate(correct_answers, incorrect_answers)
     subject = answers_list[0].subject
-    return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back="/profile/" + str(user))
+    #return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back="/profile/" + str(user_id))
+    return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back=request.referrer)
 
 
 @app.route("/course/<int:course_id>/enroll")
@@ -236,3 +268,4 @@ def frame():
 #profiilinäkymän muutos id:ttömäksi?
 #tietokantaan indeksejä?
 #vastauskenttä saisi unohtaa käyttäjän aiemmat vastaukset
+#kurssitehtävät aakkosjärjestykseen
