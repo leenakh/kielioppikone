@@ -145,6 +145,9 @@ def course(course_id):
 @app.route("/course/<int:course_id>/pupils")
 def pupils(course_id):
     user_id = users.user_id()
+    teacher_id = courses.get_teacher(course_id)
+    if not users.owner_of(teacher_id):
+        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
     pupils_list = courses.get_users(course_id)
     if not pupils:
         return render_template("error.html", message="Kurssin osallistujia ei löytynyt.", back="/profile/" + str(user_id))
@@ -203,8 +206,8 @@ def statistics(id, user):
     user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    #if not users.owner_of(user):
-    #    return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+    if not users.owner_of(user) and not users.owner_of(courses.get_teacher(id)):
+        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
     answers_list = answers.get_by_course(user, id)
     if not answers_list:
         return render_template("error.html", message="Et ole vielä vastannut yhteenkään tehtävään.", back="/profile/" + str(user_id))
@@ -212,7 +215,6 @@ def statistics(id, user):
     incorrect_answers = answers.count_incorrect(answers_list)
     success_rate = answers.get_success_rate(correct_answers, incorrect_answers)
     subject = answers_list[0].subject
-    #return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back="/profile/" + str(user_id))
     return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back=request.referrer)
 
 
