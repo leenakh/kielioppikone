@@ -72,9 +72,13 @@ def logout():
     return render_template("error.html", message="Uloskirjautuminen ei onnistunut.", back="/")
 
 
-@app.route("/courses/")
+@app.route("/courses/", methods=["GET", "POST"])
 def get_courses():
-    courses_list = courses.get_courses()
+    if request.method == "POST":
+        search = request.form["search"]
+        courses_list = courses.get_by_search(search)
+    else:
+        courses_list = courses.get_courses()
     return render_template("courses.html", courses=courses_list)
 
 

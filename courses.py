@@ -6,8 +6,17 @@ def get_courses():
         users.first_name, users.last_name from courses \
         left join users on courses.teacher_id = users.id"
     result = db.session.execute(sql)
-    courses_list = result.fetchall()
-    return courses_list
+    return result.fetchall()
+
+
+def get_by_search(word):
+    search = "%" + word + "%"
+    sql = "select courses.id, courses.teacher_id, courses.subject, courses.description, courses.exercises, \
+        users.first_name, users.last_name from courses \
+        join users on courses.teacher_id = users.id \
+        where courses.subject like :search or courses.description like :search or users.first_name like :search or users.last_name like :search"
+    result = db.session.execute(sql, {"search":search})
+    return result.fetchall()
 
 
 def get_course(id):

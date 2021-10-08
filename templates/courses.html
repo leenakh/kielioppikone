@@ -3,15 +3,20 @@
 
 {% block content %}
 
+<form class="aligned-right" action="/courses" method="POST">
+    <label></label><input type="text" name="search">
+    <input type="submit" value="Hae">
+</form>
+
 {% for course in courses %}
-    <div class="container">
-        <a href="/course/{{course.id}}">
+<div class="container">
+    <a href="/course/{{course.id}}">
         {{ course.subject }}</a><br>
-        <i>{{ course.description }}</i><br>
-        {{ course.first_name }} {{course.last_name}}<br>
-        <b>{{ course.exercises }} tehtävää</b>
-        <a href="/course/{{course.id}}/confirm" style="float:right">Ilmoittaudu</a>
-    </div>
+    <i>{{ course.description }}</i><br>
+    {{ course.first_name }} {{course.last_name}}<br>
+    <b>{{ course.exercises }} tehtävää</b>
+    <a href="/course/{{course.id}}/confirm" style="float:right">Ilmoittaudu</a>
+</div>
 {% endfor %}
 
 {% endblock %}
