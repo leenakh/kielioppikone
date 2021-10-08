@@ -36,21 +36,25 @@
 
 <h3>Omat kurssisi</h3>
 {% for course in courses %}
+{% if course.visible %}
 <div class="container">
-
-    <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
-    {{ course.description }}<br>
-    <b>{{ course.exercises }} tehtävää</b><br>
-    {% if is_teacher %}
-    <a href="/course/{{course.id}}/pupils">Osallistujat</a>
-    <a href="/course/{{ course.id }}/edit" style="float:right">Muokkaa</a>
-    {% elif is_admin %}
-    <div>Hallintanäkymä</div>
     {% else %}
+    <div class="container-inactive">
+        {% endif %}
 
-    <a href="/course/{{ course.id }}/statistics/{{ user }}" style="float:right">Tilastoja</a>
-    {% endif %}
+        <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
+        {{ course.description }}<br>
+        <b>{{ course.exercises }} tehtävää</b><br>
+        {% if is_teacher %}
+        <a href="/course/{{course.id}}/pupils">Osallistujat</a>
+        <a href="/course/{{ course.id }}/edit" style="float:right">Muokkaa</a>
+        {% elif is_admin %}
+        <div>Hallintanäkymä</div>
+        {% else %}
 
-</div>
-{% endfor %}
-{% endblock %}
+        <a href="/course/{{ course.id }}/statistics/{{ user }}" style="float:right">Tilastoja</a>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+    {% endblock %}

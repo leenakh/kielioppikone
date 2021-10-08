@@ -8,7 +8,7 @@ def get_questions(course_id):
 
 
 def get_course_questions(course_id):
-    sql = "select count(answers.id) as answers, questions.id, questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id left join answers on questions.id = answers.question_id group by questions.id, questions.inflection, questions.course_id, words.lemma having questions.course_id = :course_id"
+    sql = "select count(answers.id) as answers, questions.id, questions.inflection, questions.course_id, words.lemma from questions join words on questions.word_id = words.id left join answers on questions.id = answers.question_id group by questions.id, questions.inflection, questions.course_id, words.lemma having questions.course_id = :course_id order by words.lemma"
     result = db.session.execute(sql, {"course_id":course_id})
     return result.fetchall()
 

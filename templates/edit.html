@@ -6,6 +6,11 @@
 <div style="margin-left: 20px;">
     <i>{{ course.description }}</i><br>
     <b>{{ exercises }} tehtävää</b>
+    {% if course.visible %}
+    <a href="/course/{{course_id}}/remove" style="float: right;">Piilota</a>
+    {% else %}
+    <a href="/course/{{course_id}}/restore" style="float: right;">Palauta</a>
+    {% endif %}
 </div>
 <hr>
 <h3>Kurssin tehtävät</h3>
@@ -37,22 +42,25 @@
     <table>
         <form action="/course/{{course_id}}/edit/add" method="POST">
             <tr>
-            <td><label>Perusmuoto</label></td><td><input list="lemmas" type="text" name="lemma"></td>
-            <td><label>Määritelmä</label></td>
-        </tr>
-        <tr>
-            <td><label>Taivutus</label></td><td><input type="text" name="inflection"></td>
-            <td rowspan="2">
-                {% for definition in definitions %}
-                <input type="radio" id={{definition.definition}} name="definition" value="{{ definition.definition }}">
-                <label class="font-normal" for="{{ definition.definition }}">{{ definition.definition }}</label><br>
-                {% endfor %}
-            </td>
-        </tr>
-        <tr>
-            <td><input type="submit" value="Lisää tehtävä"></td>
-            <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
-        </tr>
+                <td><label>Perusmuoto</label></td>
+                <td><input list="lemmas" type="text" name="lemma"></td>
+                <td><label>Määritelmä</label></td>
+            </tr>
+            <tr>
+                <td><label>Taivutus</label></td>
+                <td><input type="text" name="inflection"></td>
+                <td rowspan="2">
+                    {% for definition in definitions %}
+                    <input type="radio" id={{definition.definition}} name="definition"
+                        value="{{ definition.definition }}">
+                    <label class="font-normal" for="{{ definition.definition }}">{{ definition.definition }}</label><br>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td><input type="submit" value="Lisää tehtävä"></td>
+                <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+            </tr>
         </form>
     </table>
 </div>

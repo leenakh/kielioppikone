@@ -4,7 +4,7 @@ from db import db
 def get_courses():
     sql = "select courses.id, courses.teacher_id, courses.subject, courses.description, courses.exercises, \
         users.first_name, users.last_name from courses \
-        left join users on courses.teacher_id = users.id"
+        left join users on courses.teacher_id = users.id where courses.visible = true"
     result = db.session.execute(sql)
     return result.fetchall()
 
@@ -14,13 +14,13 @@ def get_by_search(word):
     sql = "select courses.id, courses.teacher_id, courses.subject, courses.description, courses.exercises, \
         users.first_name, users.last_name from courses \
         join users on courses.teacher_id = users.id \
-        where courses.subject like :search or courses.description like :search or users.first_name like :search or users.last_name like :search"
+        where (courses.subject like :search or courses.description like :search or users.first_name like :search or users.last_name like :search) and courses.visible = true"
     result = db.session.execute(sql, {"search":search})
     return result.fetchall()
 
 
 def get_course(id):
-    sql = "select courses.teacher_id, courses.subject, courses.description from courses where courses.id = :id"
+    sql = "select courses.visible, courses.teacher_id, courses.subject, courses.description from courses where courses.id = :id"
     result = db.session.execute(sql, {"id": id})
     course = result.fetchone()
     return course
@@ -33,13 +33,13 @@ def get_teacher(course_id):
 
 
 def get_teachers_courses(user_id):
-    sql = "select courses.id, courses.subject, courses.description, courses.exercises from courses where courses.teacher_id = :user_id"
+    sql = "select courses.visible, courses.id, courses.subject, courses.description, courses.exercises from courses where courses.teacher_id = :user_id"
     result = db.session.execute(sql, {"user_id": user_id})
     return result.fetchall()
 
 
 def get_users_courses(user_id):
-    sql = "select courses.id, courses.subject, courses.description, courses.exercises, enrollments.course_id from courses join enrollments on enrollments.course_id = courses.id where enrollments.user_id = :user_id"
+    sql = "select courses.id, courses.subject, courses.description, courses.exercises, enrollments.course_id from courses join enrollments on enrollments.course_id = courses.id where enrollments.user_id = :user_id and courses.visible = true"
     result = db.session.execute(sql, {"user_id": user_id})
     return result.fetchall()
 
@@ -114,4 +114,14 @@ def update_course_info(id, subject, description):
             db.session.commit()
         except:
             return False
+    return True
+
+
+def set_visible(course_id, value):
+    try:
+        sql = "update courses set visible = :value where courses.id = :course_id"
+        db.session.execute(sql, {"value":value, "course_id":course_id})
+        db.session.commit()
+    except:
+        return False
     return True

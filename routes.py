@@ -164,7 +164,9 @@ def edit(course_id):
     if not users.logged_in():
         return redirect("/login")
     course = courses.get_course(course_id)
-    teacher_id = course.teacher_id
+    if not course:
+        return render_template("error.html", message="Kurssia ei ole olemassa.", back="/profile/" + str(user_id))
+    teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
         return render_template("error.html", message='Pääsy kielletty.', back="/profile/" + str(user_id))
     course_questions = questions.get_course_questions(course_id)
@@ -203,6 +205,28 @@ def change(id):
     if not courses.update_course_info(id, subject, description):
         return render_template("error.html", message="Kurssin tietojen muuttaminen ei onnistunut.", back="/course/" + str(id) + "/edit")
     return redirect("/course/" + str(id) + "/edit")
+
+
+@app.route("/course/<int:course_id>/remove")
+def remove_course(course_id):
+    user_id = users.user_id()
+    teacher_id = courses.get_teacher(course_id)
+    if not users.owner_of(teacher_id):
+        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+    if not courses.set_visible(course_id, False):
+        return render_template("error.html", message="Kurssin piilottaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+    return redirect("/profile/" + str(user_id))
+
+
+@app.route("/course/<int:course_id>/restore")
+def restore_course(course_id):
+    user_id = users.user_id()
+    teacher_id = courses.get_teacher(course_id)
+    if not users.owner_of(teacher_id):
+        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+    if not courses.set_visible(course_id, True):
+        return render_template("error.html", message="Kurssin palauttaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+    return redirect("/profile/" + str(user_id))
 
 
 @app.route("/course/<int:id>/statistics/<int:user>")
@@ -265,13 +289,3 @@ def remove(course_id, question_id):
 @app.route("/frame")
 def frame():
     return render_template("frame.html")
-
-# TODO
-# etusivulle jotain, uusimmat tapahtumat tms.
-# tietojen poistaminen: käyttäjätunnus, kurssi, kurssin tehtävä
-# kurssille kenttä, joka kertoo luokan (esim. nominien taivutus, verbien taivutus), ja/tai ehkä asiasanoja?
-# placeholderit lomakekenttiin
-#profiilinäkymän muutos id:ttömäksi?
-#tietokantaan indeksejä?
-#vastauskenttä saisi unohtaa käyttäjän aiemmat vastaukset
-#kurssitehtävät aakkosjärjestykseen
