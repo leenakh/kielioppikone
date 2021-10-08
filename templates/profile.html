@@ -14,18 +14,23 @@
 {% if is_teacher %}
 <h3>Lisää uusi kurssi</h3>
 <div class="container">
-    <form action="/courses/add" method="POST">
-        <p>
-            <label>Otsikko: </label><input type="text" name="subject">
-        </p>
-        <p>
-            <label>Kuvaus: </label><input type="text" name="description">
-        </p>
-        <p>
-            <input type="submit" value="Lähetä">
-        </p>
-        <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
-    </form>
+    <table>
+        <form action="/courses/add" method="POST">
+            <tr>
+                <td><label>Otsikko</label></td>
+                <td><input type="text" name="subject" size="54"></td>
+            </tr>
+            <tr>
+                <td><label>Kuvaus</label></td>
+                <td><textarea name="description" cols="50" rows="4" scrolling="no"></textarea>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="aligned-right"><input type="submit" value="Lähetä"></td>
+            </tr>
+            <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+        </form>
+    </table>
 </div>
 {% endif %}
 

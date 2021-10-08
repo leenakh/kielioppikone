@@ -11,9 +11,11 @@
 <h3>Kurssin tehtävät</h3>
 <div class="container">
     <table>
+        <th class="first-column">Perusmuoto</th>
+        <th colspan=2>Taivutus</th>
         {% for question in course_questions %}
         <tr>
-            <td style="min-width: 100px;">{{ question.lemma }}</td>
+            <td>{{ question.lemma }}</td>
             <td>{{ question.inflection }}</td>
             {% if question.answers == 0 %}
             <td><a href="/course/{{course_id}}/question/{{question.id}}/remove">Poista</a></td>
@@ -32,34 +34,48 @@
 </datalist>
 
 <div class="container">
-    <form action="/course/{{course_id}}/edit/add" method="POST">
-        <p>Sanan perusmuoto: <input list="lemmas" type="text" name="lemma"></p>
-        <p>Taipunut muoto: <input type="text" name="inflection"></p>
-        <p>Määritelmä:<br>
-            {% for definition in definitions %}
-            <input type="radio" id={{definition.definition}} name="definition" value="{{ definition.definition }}">
-            <label for="{{ definition.definition }}">{{ definition.definition }}</label><br>
-            {% endfor %}
-        </p>
-        <p><input type="submit" value="Lisää tehtävä"></p>
-        <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
-    </form>
+    <table>
+        <form action="/course/{{course_id}}/edit/add" method="POST">
+            <tr>
+            <td><label>Perusmuoto</label></td><td><input list="lemmas" type="text" name="lemma"></td>
+            <td><label>Määritelmä</label></td>
+        </tr>
+        <tr>
+            <td><label>Taivutus</label></td><td><input type="text" name="inflection"></td>
+            <td rowspan="2">
+                {% for definition in definitions %}
+                <input type="radio" id={{definition.definition}} name="definition" value="{{ definition.definition }}">
+                <label class="font-normal" for="{{ definition.definition }}">{{ definition.definition }}</label><br>
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <td><input type="submit" value="Lisää tehtävä"></td>
+            <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+        </tr>
+        </form>
+    </table>
 </div>
 
 <h3>Muokkaa kurssin tietoja</h3>
 <div class="container">
-    <form action="/course/{{course_id}}/edit/change" method="POST">
-        <p>
-            <label>Otsikko: </label><input type="text" name="subject">
-        </p>
-        <p>
-            <label>Kuvaus: </label><input type="text" name="description">
-        </p>
-        <p>
-            <input type="submit" value="Lähetä">
-        </p>
-        <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
-    </form>
+    <table>
+        <form action="/course/{{course_id}}/edit/change" method="POST">
+            <tr>
+                <td><label>Otsikko</label></td>
+                <td><input type="text" name="subject" size="54"></td>
+            </tr>
+            <tr>
+                <td><label>Kuvaus</label></td>
+                <td><textarea name="description" cols="50" rows="4" scrolling="no"></textarea>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="aligned-right"><input type="submit" value="Lähetä"></td>
+            </tr>
+            <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+        </form>
+    </table>
 </div>
 
 {% endblock %}

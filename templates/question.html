@@ -3,15 +3,26 @@
 {% block content %}
 
 <div class="question-container">
-    <div>{{ question.lemma }}</div>
-    <div>{{ question.definition}}</div>
-    <form action="/answer/{{question.id}}" method="POST" target="frame">
-        Vastauksesi: <input type="text" name="answer" key={{question.id}}>
-        <input type="submit" value="Tarkista">
-        <input type="hidden" name="correct" value="{{question.inflection}}">
-        <input type="hidden" name="course" value="{{question.course_id}}">
-        <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
-    </form>
+    <table>
+        <th>Perusmuoto</th>
+        <th>Taivutus</th>
+        <tr>
+            <td>{{ question.lemma }}</td>
+            <td>{{ question.definition}}</td>
+        </tr>
+        <th>Vastaus</th>
+        <tr>
+            <td colspan=2>
+                <form action="/answer/{{question.id}}" method="POST" target="frame">
+                    <input type="text" name="answer" key={{question.id}}>
+                    <input type="submit" value="Tarkista">
+                    <input type="hidden" name="correct" value="{{question.inflection}}">
+                    <input type="hidden" name="course" value="{{question.course_id}}">
+                    <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+                </form>
+            </td>
+        </tr>
+    </table>
 </div>
 
 {% endblock %}
