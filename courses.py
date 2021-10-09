@@ -45,7 +45,7 @@ def get_users_courses(user_id):
 
 
 def get_users(course_id):
-    sql = "select enrollments.user_id, enrollments.entered, users.first_name, users.last_name, count(answers.id) from enrollments join users on enrollments.user_id = users.id join answers on answers.user_id = enrollments.user_id group by enrollments.user_id, users.first_name, users.last_name, enrollments.course_id, enrollments.entered, answers.course_id having enrollments.course_id = 9 and answers.course_id = :course_id"
+    sql = "select enrollments.user_id, enrollments.entered, users.first_name, users.last_name, count(answers.id) from enrollments join users on enrollments.user_id = users.id join answers on answers.user_id = enrollments.user_id group by enrollments.user_id, users.first_name, users.last_name, enrollments.course_id, enrollments.entered, answers.course_id having enrollments.course_id = 9 and answers.course_id = :course_id order by count desc"
     result = db.session.execute(sql, {"course_id":course_id})
     return result.fetchall()
 
