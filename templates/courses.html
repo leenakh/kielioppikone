@@ -6,6 +6,7 @@
 <form class="aligned-right" action="/courses" method="POST">
     <label></label><input type="text" name="search">
     <input type="submit" value="Hae">
+    <input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
 </form>
 
 {% for course in courses %}
@@ -15,7 +16,7 @@
     <i>{{ course.description }}</i><br>
     {{ course.first_name }} {{course.last_name}}<br>
     <b>{{ course.exercises }} tehtävää</b>
-    <a href="/course/{{course.id}}/confirm" style="float:right">Ilmoittaudu</a>
+    <a href="/course/{{course.id}}/confirm" class="float-right">Ilmoittaudu</a>
 </div>
 {% endfor %}
 

@@ -75,6 +75,7 @@ def logout():
 @app.route("/courses/", methods=["GET", "POST"])
 def get_courses():
     if request.method == "POST":
+        validate_token(request.form["csrf_token"])
         search = request.form["search"]
         courses_list = courses.get_by_search(search)
     else:

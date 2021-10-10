@@ -124,6 +124,10 @@ a:hover {
     color: darkgrey;
 }
 
+.float-right {
+    float: right;
+}
+
 hr {
     height: 2px;
     color: darkgrey;
