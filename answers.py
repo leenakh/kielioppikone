@@ -52,3 +52,9 @@ def get_correct(user_id):
     sql = "select question_id from answers where user_id = :user_id and correct = true"
     result = db.session.execute(sql, {"user_id": user_id})
     return result.fetchall()
+
+
+def count_recent(user_id):
+    sql = "select count(answers.id) from answers where user_id = :user_id and answered > now() - interval '30 minute'"
+    result = db.session.execute(sql, {"user_id":user_id})
+    return result.fetchone()

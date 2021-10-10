@@ -7,9 +7,9 @@
     <i>{{ course.description }}</i><br>
     <b>{{ exercises }} tehtävää</b>
     {% if course.visible %}
-    <a href="/course/{{course_id}}/remove" class="float-right;">Piilota</a>
+    <a href="/course/{{course_id}}/remove" class="float-right">Piilota</a>
     {% else %}
-    <a href="/course/{{course_id}}/restore" class="float-right;">Palauta</a>
+    <a href="/course/{{course_id}}/restore" class="float-right">Palauta</a>
     {% endif %}
 </div>
 <hr>

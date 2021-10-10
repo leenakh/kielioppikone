@@ -61,7 +61,7 @@ def login():
         password = request.form["password"]
         if users.login(username, password):
             return redirect("/")
-        return render_template("error.html", message="Väärä käyttäjätunnus tai salasana", back="/")
+        return render_template("error.html", message="Väärä käyttäjätunnus tai salasana", back="/login")
     return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
 
 
@@ -112,11 +112,13 @@ def profile(id):
 @app.route("/answer/<int:id>", methods=["POST"])
 def answer(id):
     validate_token(request.form["csrf_token"])
+    user_id = users.user_id()
+    if answers.count_recent(user_id).count > 200:
+        return redirect(request.referrer)
     current_answer = request.form["answer"]
     correct = request.form["correct"]
     current_course = request.form["course"]
     is_correct = True
-    user_id = users.user_id()
     if current_answer != correct:
         is_correct = False
     if not answers.add(user_id, id, current_course, is_correct):
@@ -193,6 +195,8 @@ def add(course_id):
     definition_id = definitions.get_id(definition)
     if questions.add_question(course_id, lemma_id, definition_id, inflection):
         courses.update_exercise_count(course_id, "increment")
+    else:
+        return render_template("error.html", message="Tehtävän lisääminen ei onnistunut.", back=request.referrer)
     return redirect("/course/" + str(course_id) + "/edit")
 
 
