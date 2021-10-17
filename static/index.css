@@ -20,6 +20,11 @@ body.simple {
     font-weight: bold;
 }
 
+h3 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
 .nav-link {
     display: inline-block;
     padding: 0 .4em;
@@ -35,7 +40,7 @@ body.simple {
     width: 100%
 }
 
-.container, .marked, .link-container, .container-inactive {
+.container, .marked, .link-container, .container-inactive, .container-front-page {
     display: inline-block;
     margin-top: 0%;
     background-color: white;
@@ -54,6 +59,18 @@ body.simple {
 
 .link-container {
     margin-left: 40px;
+}
+
+.container-front-page {
+    float: left;
+    width: 500px;
+    margin-top: 20px;
+    margin: 20px;
+}
+
+.container-latest-courses {
+    float: right;
+    width: 200px;
 }
 
 .overlay {
@@ -93,6 +110,10 @@ label {
 
 .font-normal {
     font-weight: normal;
+}
+
+.aligned-left {
+    text-align: left;
 }
 
 .aligned-right {
