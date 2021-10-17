@@ -19,8 +19,16 @@ def get_by_search(word):
     return result.fetchall()
 
 
+def get_latest(amount):
+    sql = "select courses.id, courses.teacher_id, courses.subject, courses.description, courses.exercises, \
+        users.first_name, users.last_name from courses \
+        left join users on courses.teacher_id = users.id where courses.visible = true order by id desc limit :amount"
+    result = db.session.execute(sql, {"amount":amount})
+    return result.fetchall()
+
+
 def get_course(id):
-    sql = "select courses.visible, courses.teacher_id, courses.subject, courses.description from courses where courses.id = :id"
+    sql = "select courses.id, courses.visible, courses.teacher_id, courses.subject, courses.description, courses.exercises, users.first_name, users.last_name from courses join users on courses.teacher_id = users.id where courses.id = :id"
     result = db.session.execute(sql, {"id": id})
     course = result.fetchone()
     return course
