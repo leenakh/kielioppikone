@@ -32,7 +32,9 @@ def format(date):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html")
+    user_id = users.user_id()
+    latest_courses = courses.get_latest(6)
+    return render_template("index.html", latest_courses=latest_courses, user_id=user_id)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -45,6 +47,12 @@ def register():
         password2 = request.form["password2"]
         first_name = request.form["first-name"]
         last_name = request.form["last-name"]
+        if users.exists(username):
+            return render_template("error.html", message="Käyttäjätunnus on varattu.", back="/register")
+        if not valid_input(4, 20, username) or not valid_input(7, 20, password1):
+            return render_template("error.html", message="Käyttäjätunnuksen täytyy olla 4 - 20 merkin pituinen. Salasanan täytyy olla 7 - 20 merkin pituinen.", back="/register")
+        if not valid_input(2, 50, first_name) or not valid_input(2, 50, last_name):
+            return render_template("error.html", message="Etunimen ja sukunimen täytyy olla 1 - 50 merkin pituinen.", back="/register")
         if password1 != password2:
             return render_template("error.html", message="Salasanat eivät täsmää.", back="/register")
         if users.register(username, password1, 'user', first_name, last_name):
@@ -60,7 +68,7 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
         if users.login(username, password):
-            return redirect("/")
+            return redirect("/profile/" + str(users.user_id()))
         return render_template("error.html", message="Väärä käyttäjätunnus tai salasana", back="/login")
     return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
 
@@ -143,7 +151,7 @@ def add_course():
 def course(course_id):
     user_id = users.user_id()
     if not enrollments.enrolled(user_id, course_id):
-        return redirect("/course/" + str(course_id) + "/confirm")
+        return redirect("/course/" + str(course_id) + "/info")
     questions_list = questions.get_questions(course_id)
     correct_answers = answers.get_correct(user_id)
     return render_template("course.html", questions_list=questions_list, correct_answers=correct_answers)
@@ -261,6 +269,12 @@ def enroll(course_id):
     return redirect("/course/" + str(course_id))
 
 
+@app.route("/course/<int:course_id>/info")
+def course_info(course_id):
+    course = courses.get_course(course_id)
+    return render_template("info.html", course=course)
+
+
 @app.route("/course/<int:course_id>/confirm")
 def confirm(course_id):
     user_id = users.user_id()
@@ -269,7 +283,7 @@ def confirm(course_id):
     if enrollments.enrolled(user_id, course_id):
         return render_template("error.html", message="Olet jo ilmoittautunut tälle kurssille.", back="/courses")
     message = 'Haluatko ilmoittautua kurssille?'
-    return render_template("confirm.html", message=message, id=course_id)
+    return render_template("confirm.html", message=message, id=course_id, back=request.referrer)
 
 
 @app.route("/question/<int:question_id>")

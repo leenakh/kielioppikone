@@ -5,17 +5,16 @@ from db import db
 
 
 def register(username, password, role, first_name, last_name):
-    if 4 < len(username) < 20 and 7 < len(password) < 20:
-        hash_value = generate_password_hash(password)
-        try:
-            sql = "INSERT INTO users (username, password, role, first_name, last_name) \
-                VALUES (:username, :password, :role, :first_name, :last_name)"
-            db.session.execute(
-                sql, {"username": username, "password": hash_value, "role": role, "first_name": first_name, "last_name": last_name})
-            db.session.commit()
-        except:
-            return False
-        return login(username, password)
+    hash_value = generate_password_hash(password)
+    try:
+        sql = "INSERT INTO users (username, password, role, first_name, last_name) \
+            VALUES (:username, :password, :role, :first_name, :last_name)"
+        db.session.execute(
+            sql, {"username": username, "password": hash_value, "role": role, "first_name": first_name, "last_name": last_name})
+        db.session.commit()
+    except:
+        return False
+    return login(username, password)
 
 
 def login(username, password):
@@ -32,6 +31,14 @@ def login(username, password):
         return True
     return False
 
+
+def exists(username):
+    sql = "select 1 from users where username = :username"
+    result = db.session.execute(sql, {"username":username})
+    if result.fetchone():
+        return True
+    return False
+        
 
 def user_id():
     return session.get("user_id", 0)
