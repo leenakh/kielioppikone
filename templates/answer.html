@@ -5,11 +5,17 @@
 <div class="question-container">
     {% if answer == correct %}
     Vastauksesi on oikein!
-    <div><a href="/course/{{course}}" target="_parent">Päivitä tuloksesi</a></div>
+    <div>
+        <a href="/course/{{course}}" target="_parent">
+            Päivitä tuloksesi
+        </a>
+    </div>
     {% else %}
-    Vastauksesi on väärin. <a href="/question/{{ id }}">Yritä uudestaan!</a>
+    Vastauksesi on väärin.
+    <a href="/question/{{id}}">
+        Yritä uudestaan!
+    </a>
     {% endif %}
-    
 </div>
 
 {% endblock %}

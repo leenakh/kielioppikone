@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block title %}Kurssit{% endblock %}
-
 {% block content %}
 
 <form class="aligned-right" action="/courses" method="POST">
@@ -17,7 +16,9 @@
     <i>{{ course.description }}</i><br>
     {{ course.first_name }} {{course.last_name}}<br>
     <b>{{ course.exercises }} tehtävää</b>
-    <a href="/course/{{course.id}}/confirm" class="float-right">Ilmoittaudu</a>
+    <a href="/course/{{course.id}}/confirm" class="float-right">
+        Ilmoittaudu
+    </a>
 </div>
 {% endfor %}
 

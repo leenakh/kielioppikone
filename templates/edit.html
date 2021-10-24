@@ -3,16 +3,21 @@
 {% block content %}
 
 <h2>{{ course.subject }}</h2>
-<div style="margin-left: 20px;">
+<div class="course-info">
     <i>{{ course.description }}</i><br>
     <b>{{ exercises }} tehtävää</b>
     {% if course.visible %}
-    <a href="/course/{{course_id}}/remove" class="float-right">Piilota</a>
+    <a href="/course/{{course_id}}/remove" class="float-right">
+        Piilota
+    </a>
     {% else %}
-    <a href="/course/{{course_id}}/restore" class="float-right">Palauta</a>
+    <a href="/course/{{course_id}}/restore" class="float-right">
+        Palauta
+    </a>
     {% endif %}
 </div>
 <hr>
+
 <h3>Kurssin tehtävät</h3>
 <div class="container">
     <table>
@@ -23,7 +28,11 @@
             <td>{{ question.lemma }}</td>
             <td>{{ question.inflection }}</td>
             {% if question.answers == 0 %}
-            <td><a href="/course/{{course_id}}/question/{{question.id}}/remove">Poista</a></td>
+            <td>
+                <a href="/course/{{course_id}}/question/{{question.id}}/remove">
+                    Poista
+                </a>
+            </td>
             {% endif %}
         </tr>
         {% endfor %}
@@ -35,7 +44,7 @@
 <datalist id="lemmas">
     {% for word in words %}
     <option value={{word.lemma}}>
-        {% endfor %}
+    {% endfor %}
 </datalist>
 
 <div class="container">
@@ -51,9 +60,8 @@
                 <td><input type="text" id="inflection" name="inflection"></td>
                 <td rowspan="2">
                     {% for definition in definitions %}
-                    <input type="radio" id={{definition.definition}} name="definition"
-                        value="{{ definition.definition }}">
-                    <label class="font-normal" for="{{ definition.definition }}">{{ definition.definition }}</label><br>
+                    <input type="radio" id={{definition.definition}} name="definition" value="{{definition.definition}}">
+                    <label class="font-normal" for="{{definition.definition}}">{{ definition.definition }}</label><br>
                     {% endfor %}
                 </td>
             </tr>

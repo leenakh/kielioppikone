@@ -35,24 +35,35 @@
 {% endif %}
 
 <h3>Omat kurssisi</h3>
-
 {% if is_teacher %}
 {% for course in courses %}
 {% if course.visible %}
 <div class="container">
-    <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
+    <a href="/course/{{course.id}}">
+        {{ course.subject }}
+    </a><br>
     {{ course.description }}<br>
     <b>{{ course.exercises }} tehtävää</b><br>
-    <a href="/course/{{course.id}}/pupils">Osallistujat</a>
-    <a href="/course/{{ course.id }}/edit" class="float-right">Muokkaa</a>
+    <a href="/course/{{course.id}}/pupils">
+        Osallistujat
+    </a>
+    <a href="/course/{{course.id}}/edit" class="float-right">
+        Muokkaa
+    </a>
 </div>
 {% else %}
 <div class="container-inactive">
-    <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
+    <a href="/course/{{course.id}}">
+        {{ course.subject }}
+    </a><br>
     {{ course.description }}<br>
     <b>{{ course.exercises }} tehtävää</b><br>
-    <a href="/course/{{course.id}}/pupils">Osallistujat</a>
-    <a href="/course/{{ course.id }}/edit" class="float-right">Muokkaa</a>
+    <a href="/course/{{course.id}}/pupils">
+        Osallistujat
+    </a>
+    <a href="/course/{{course.id}}/edit" class="float-right">
+        Muokkaa
+    </a>
 </div>
 {% endif %}
 {% endfor %}
@@ -60,11 +71,16 @@
 {% if is_user %}
 {% for course in courses %}
 <div class="container">
-    <a href="/course/{{ course.id }}">{{ course.subject }}</a><br>
+    <a href="/course/{{course.id}}">
+        {{ course.subject }}
+    </a><br>
     {{ course.description }}<br>
     <b>{{ course.exercises }} tehtävää</b>
-    <a href="/course/{{ course.id }}/statistics/{{ user }}" class="float-right">Tilastoja</a>
+    <a href="/course/{{course.id}}/statistics/{{user}}" class="float-right">
+        Tilastoja
+    </a>
 </div>
 {% endfor %}
 {% endif %}
+
 {% endblock %}

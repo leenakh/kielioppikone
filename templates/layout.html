@@ -11,18 +11,38 @@
 <body>
     <div class="login-info">
         {% if session.user_id %}
-        <div><a href="/profile/{{session.user_id}}"><i>{{ session.username }}</i></a></div>
-
-        <a href="/logout">Kirjaudu ulos</a>
+        <div>
+            <a href="/profile/{{session.user_id}}">
+                <i>{{ session.username }}</i>
+            </a>
+        </div>
+        <a href="/logout">
+            Kirjaudu ulos
+        </a>
         {% else %}
-        <a href="/login">Kirjaudu</a>
-        <br>
-        <a href="/register">Rekisteröidy</a>
+        <a href="/login">
+            Kirjaudu
+        </a><br>
+        <a href="/register">
+            Rekisteröidy
+        </a>
         {% endif %}
     </div>
-    <div class="header-main">Kielioppikone</div>
-    <div class="nav-link"><a href="/">Etusivu</a></div>
-    <div class="nav-link"><a href="/courses">Kurssit</a></div>
+    <div class="header-main">
+        Kielioppikone
+    </div>
+    <div class="nav-link">
+        <a href="/">
+            Etusivu
+        </a>
+    </div>
+    <div class="nav-link">
+        <a href="/courses">
+            Kurssit
+        </a>
+    </div>
     <hr>
+
     {% block content %}{% endblock %}
+    
 </body>

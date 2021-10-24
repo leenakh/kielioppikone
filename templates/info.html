@@ -1,15 +1,19 @@
 {% extends "layout.html" %}
 {% block title %}{{ course.subject }}{% endblock %}
-
 {% block content %}
+
 {% if course.visible %}
 <div class="container-course">
     <a href="/course/{{course.id}}">
-        {{ course.subject }}</a><br>
+        {{ course.subject }}
+    </a><br>
     <i>{{ course.description }}</i><br>
     {{ course.first_name }} {{course.last_name}}<br>
     <b>{{ course.exercises }} tehtävää</b>
-    <a href="/course/{{course.id}}/confirm" class="float-right">Ilmoittaudu</a>
+    <a href="/course/{{course.id}}/confirm" class="float-right">
+        Ilmoittaudu
+    </a>
 </div>
 {% endif %}
+
 {% endblock %}

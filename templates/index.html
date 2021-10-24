@@ -1,26 +1,32 @@
 {% extends "layout.html" %}
 {% block title %}Etusivu{% endblock %}
-
 {% block content %}
+
 <div class="container-front-page">
     <h3>Tervetuloa käyttämään Kielioppikonetta!</h3>
-    <p>Sen avulla voit harjoitella suomen kielen sanojen taivutusmuotojen tunnistamista ja muodostamista. Kursseja on kaikentasoisia aivan alkeista lähtien.</p>
-    <p>{% if not user_id %}<a href="/register">Luo käyttäjätunnus</a>, v{% else %}V{% endif %}alitse itsellesi sopiva kurssi, ilmoittaudu ja ryhdy tekemään tehtäviä omaan tahtiisi. Profiilisivultasi näet, miten opintosi edistyvät.</p>
-
+    <p>
+        Sen avulla voit harjoitella suomen kielen sanojen taivutusmuotojen tunnistamista ja muodostamista. Kursseja on
+        kaikentasoisia aivan alkeista lähtien.
+    </p>
+    <p>
+        {% if not user_id %}<a href="/register">Luo käyttäjätunnus</a>, v{% else %}V{% endif %}alitse itsellesi sopiva
+        kurssi, ilmoittaudu ja ryhdy tekemään tehtäviä omaan tahtiisi. Profiilisivultasi näet, miten opintosi edistyvät.
+    </p>
 </div>
 
 <div class="container-latest-courses">
-
     <div class="aligned-right">
         <h3>Uusimmat kurssit</h3>
     </div>
-
     {% for course in latest_courses %}
     <div class="aligned-right">
-        <a href="/course/{{course.id}}">{{ course.subject }}</a><br>
+        <a href="/course/{{course.id}}">
+            {{ course.subject }}
+        </a><br>
         <i>{{ course.description }}</i>
         <hr>
     </div>
     {% endfor %}
 </div>
+
 {% endblock %}

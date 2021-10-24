@@ -78,6 +78,10 @@ h3 {
     width: 200px;
 }
 
+.course-info {
+    margin-left: 20px;
+}
+
 .overlay {
     background-color: transparent;
     size: 100%;
@@ -130,9 +134,14 @@ label {
     width: 40%
 }
 
+.second-column {
+    width: 20%;
+}
+
 iframe {
     width: 30em;
     height: 20em;
+    border: none;
 }
 
 textarea {
