@@ -7,10 +7,14 @@ from db import db
 def register(username_entered, password, role, first_name, last_name):
     hash_value = generate_password_hash(password)
     try:
-        sql = "INSERT INTO users (username, password, role, first_name, last_name) \
-            VALUES (:username_entered, :password, :role, :first_name, :last_name)"
-        db.session.execute(
-            sql, {"username_entered": username_entered, "password": hash_value, "role": role, "first_name": first_name, "last_name": last_name})
+        sql = "insert into users (username, password, role, first_name, last_name) \
+            values (:username_entered, :password, :role, :first_name, :last_name)"
+        db.session.execute(sql, {
+            "username_entered":username_entered, 
+            "password":hash_value, 
+            "role":role, 
+            "first_name":first_name, 
+            "last_name":last_name})
         db.session.commit()
     except:
         return False
@@ -18,8 +22,10 @@ def register(username_entered, password, role, first_name, last_name):
 
 
 def login(username_entered, password):
-    sql = "SELECT id, username, password, role FROM users WHERE username=:username_entered"
-    result = db.session.execute(sql, {"username_entered": username_entered})
+    sql = "select id, username, password, role from users \
+        where username=:username_entered"
+    result = db.session.execute(sql, {
+        "username_entered":username_entered})
     user = result.fetchone()
     if not user:
         return False
@@ -33,8 +39,10 @@ def login(username_entered, password):
 
 
 def exists(username_entered):
-    sql = "select 1 from users where username = :username_entered"
-    result = db.session.execute(sql, {"username_entered":username_entered})
+    sql = "select 1 from users \
+        where username = :username_entered"
+    result = db.session.execute(sql, {
+        "username_entered":username_entered})
     if result.fetchone():
         return True
     return False

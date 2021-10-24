@@ -34,7 +34,10 @@ def format_date(date):
 def index():
     user_id = users.user_id()
     latest_courses = courses.get_latest(6)
-    return render_template("index.html", latest_courses=latest_courses, user_id=user_id)
+    return render_template(
+        "index.html", 
+        latest_courses=latest_courses, 
+        user_id=user_id)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -48,16 +51,31 @@ def register():
         first_name = request.form["first-name"]
         last_name = request.form["last-name"]
         if users.exists(username):
-            return render_template("error.html", message="Käyttäjätunnus on varattu.", back="/register")
+            return render_template(
+                "error.html", 
+                message="Käyttäjätunnus on varattu.", 
+                back="/register")
         if not valid_input(4, 20, username) or not valid_input(7, 20, password1):
-            return render_template("error.html", message="Käyttäjätunnuksen täytyy olla 4 - 20 merkin pituinen. Salasanan täytyy olla 7 - 20 merkin pituinen.", back="/register")
+            return render_template(
+                "error.html", 
+                message="Käyttäjätunnuksen täytyy olla 4 - 20 merkin pituinen. Salasanan täytyy olla 7 - 20 merkin pituinen.", 
+                back="/register")
         if not valid_input(2, 50, first_name) or not valid_input(2, 50, last_name):
-            return render_template("error.html", message="Etunimen ja sukunimen täytyy olla 1 - 50 merkin pituinen.", back="/register")
+            return render_template(
+                "error.html", 
+                message="Etunimen ja sukunimen täytyy olla 1 - 50 merkin pituinen.", 
+                back="/register")
         if password1 != password2:
-            return render_template("error.html", message="Salasanat eivät täsmää.", back="/register")
+            return render_template(
+                "error.html", 
+                message="Salasanat eivät täsmää.", 
+                back="/register")
         if users.register(username, password1, 'user', first_name, last_name):
             return redirect("/")
-        return render_template("error.html", message="Rekisteröinti ei onnistunut.", back="/register")
+        return render_template(
+            "error.html", 
+            message="Rekisteröinti ei onnistunut.", 
+            back="/register")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -69,15 +87,24 @@ def login():
         password = request.form["password"]
         if users.login(username, password):
             return redirect("/profile/" + str(users.user_id()))
-        return render_template("error.html", message="Väärä käyttäjätunnus tai salasana", back="/login")
-    return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
+        return render_template(
+            "error.html", 
+            message="Väärä käyttäjätunnus tai salasana", 
+            back="/login")
+    return render_template(
+        "error.html", 
+        message="Toiminto ei ole sallittu.", 
+        back="/")
 
 
 @app.route("/logout")
 def logout():
     if users.logout():
         return redirect("/")
-    return render_template("error.html", message="Uloskirjautuminen ei onnistunut.", back="/")
+    return render_template(
+        "error.html", 
+        message="Uloskirjautuminen ei onnistunut.", 
+        back="/")
 
 
 @app.route("/courses/", methods=["GET", "POST"])
@@ -88,7 +115,9 @@ def get_courses():
         courses_list = courses.get_by_search(search)
     else:
         courses_list = courses.get_courses()
-    return render_template("courses.html", courses=courses_list)
+    return render_template(
+        "courses.html", 
+        courses=courses_list)
 
 
 @app.route("/profile/<int:profile_id>")
@@ -105,7 +134,10 @@ def profile(profile_id):
     elif users.owner_of(profile_id):
         allow = True
     if not allow:
-        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Pääsy kielletty.", 
+            back="/profile/" + str(user_id))
     if users.is_teacher():
         users_courses = courses.get_teachers_courses(user_id)
     else:
@@ -114,7 +146,16 @@ def profile(profile_id):
         correct_answers = answers.count_correct(users_answers)
         incorrect_answers = answers.count_incorrect(users_answers)
         success_rate = answers.get_success_rate(correct_answers, incorrect_answers)
-    return render_template("profile.html", user=user_id, courses=users_courses, is_user=users.is_user(), is_teacher=users.is_teacher(), is_admin=users.is_admin(), correct=correct_answers, incorrect=incorrect_answers, success=success_rate)
+    return render_template(
+        "profile.html", 
+        user=user_id, 
+        courses=users_courses, 
+        is_user=users.is_user(), 
+        is_teacher=users.is_teacher(), 
+        is_admin=users.is_admin(), 
+        correct=correct_answers, 
+        incorrect=incorrect_answers, 
+        success=success_rate)
 
 
 @app.route("/answer/<int:question_id>", methods=["POST"])
@@ -130,8 +171,16 @@ def answer(question_id):
     if current_answer != correct:
         is_correct = False
     if not answers.add(user_id, question_id, current_course, is_correct):
-        return render_template("error.html", message='Vastauksen lähettäminen ei onnistunut.', back="/course/" + str(current_course))
-    return render_template("answer.html", answer=current_answer, question_id=question_id, correct=correct, course=current_course)
+        return render_template(
+            "error.html", 
+            message='Vastauksen lähettäminen ei onnistunut.', 
+            back="/course/" + str(current_course))
+    return render_template(
+        "answer.html", 
+        answer=current_answer, 
+        question_id=question_id, 
+        correct=correct, 
+        course=current_course)
 
 
 @app.route("/courses/add", methods=["POST"])
@@ -141,9 +190,15 @@ def add_course():
     subject = request.form["subject"]
     description = request.form["description"]
     if not valid_input(0, 50, subject) or not valid_input(0, 200, description):
-        return render_template("error.html", message="Otsikko saa olla enintään 50 merkkiä ja kuvaus enintään 200 merkkiä pitkä.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Otsikko saa olla enintään 50 merkkiä ja kuvaus enintään 200 merkkiä pitkä.", 
+            back="/profile/" + str(user_id))
     if not courses.add(subject, description, user_id):
-        return render_template("error.html", message="Kurssin lisääminen ei onnistunut.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Kurssin lisääminen ei onnistunut.", 
+            back="/profile/" + str(user_id))
     return redirect("/profile/" + str(user_id))
 
 
@@ -154,7 +209,10 @@ def course(course_id):
         return redirect("/course/" + str(course_id) + "/info")
     questions_list = questions.get_questions(course_id)
     correct_answers = answers.get_correct(user_id)
-    return render_template("course.html", questions_list=questions_list, correct_answers=correct_answers)
+    return render_template(
+        "course.html", 
+        questions_list=questions_list, 
+        correct_answers=correct_answers)
 
 
 @app.route("/course/<int:course_id>/pupils")
@@ -162,11 +220,21 @@ def pupils(course_id):
     user_id = users.user_id()
     teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
-        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Pääsy kielletty.", 
+            back="/profile/" + str(user_id))
     pupils_list = courses.get_users(course_id)
     if not pupils:
-        return render_template("error.html", message="Kurssin osallistujia ei löytynyt.", back="/profile/" + str(user_id))
-    return render_template("pupils.html", pupils_list=pupils_list, course_id=course_id, user_id=user_id)
+        return render_template(
+            "error.html", 
+            message="Kurssin osallistujia ei löytynyt.", 
+            back="/profile/" + str(user_id))
+    return render_template(
+        "pupils.html", 
+        pupils_list=pupils_list, 
+        course_id=course_id, 
+        user_id=user_id)
 
 
 @app.route("/course/<int:course_id>/edit")
@@ -176,14 +244,27 @@ def edit(course_id):
         return redirect("/login")
     current_course = courses.get_course(course_id)
     if not current_course:
-        return render_template("error.html", message="Kurssia ei ole olemassa.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Kurssia ei ole olemassa.", 
+            back="/profile/" + str(user_id))
     teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
-        return render_template("error.html", message='Pääsy kielletty.', back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message='Pääsy kielletty.', 
+            back="/profile/" + str(user_id))
     course_questions = questions.get_course_questions(course_id)
     words_list = words.get_all()
     definitions_list = definitions.get_all()
-    return render_template("edit.html", course_questions=course_questions, exercises=len(course_questions), course_id=course_id, words=words_list, definitions=definitions_list, course=current_course)
+    return render_template(
+        "edit.html", 
+        course_questions=course_questions, 
+        exercises=len(course_questions), 
+        course_id=course_id, 
+        words=words_list, 
+        definitions=definitions_list, 
+        course=current_course)
 
 
 @app.route("/course/<int:course_id>/edit/add", methods=["GET", "POST"])
@@ -199,12 +280,18 @@ def add(course_id):
         except:
             lemma_id = words.add(lemma)
     else:
-        return render_template("error.html", message="Syötteen täytyy olla 2 - 50 merkkiä pitkä.", back=request.referrer)
+        return render_template(
+            "error.html", 
+            message="Syötteen täytyy olla 2 - 50 merkkiä pitkä.", 
+            back=request.referrer)
     definition_id = definitions.get_id(definition)
     if questions.add_question(course_id, lemma_id, definition_id, inflection):
         courses.update_exercise_count(course_id, "increment")
     else:
-        return render_template("error.html", message="Tehtävän lisääminen ei onnistunut.", back=request.referrer)
+        return render_template(
+            "error.html", 
+            message="Tehtävän lisääminen ei onnistunut.", 
+            back=request.referrer)
     return redirect("/course/" + str(course_id) + "/edit")
 
 
@@ -214,9 +301,15 @@ def change(course_id):
     subject = request.form["subject"]
     description = request.form["description"]
     if not valid_input(0, 50, subject) or not valid_input(0, 200, description):
-        return render_template("error.html", message="Otsikko saa olla enintään 50 merkkiä ja kuvaus enintään 200 merkkiä pitkä.", back="/course/" + str(course_id) + "/edit")
+        return render_template(
+            "error.html", 
+            message="Otsikko saa olla enintään 50 merkkiä ja kuvaus enintään 200 merkkiä pitkä.", 
+            back="/course/" + str(course_id) + "/edit")
     if not courses.update_course_info(course_id, subject, description):
-        return render_template("error.html", message="Kurssin tietojen muuttaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+        return render_template(
+            "error.html", 
+            message="Kurssin tietojen muuttaminen ei onnistunut.", 
+            back="/course/" + str(course_id) + "/edit")
     return redirect("/course/" + str(course_id) + "/edit")
 
 
@@ -225,9 +318,15 @@ def remove_course(course_id):
     user_id = users.user_id()
     teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
-        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Pääsy kielletty.", 
+            back="/profile/" + str(user_id))
     if not courses.set_visible(course_id, False):
-        return render_template("error.html", message="Kurssin piilottaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+        return render_template(
+            "error.html", 
+            message="Kurssin piilottaminen ei onnistunut.", 
+            back="/course/" + str(course_id) + "/edit")
     return redirect("/course/" + str(course_id) + "/edit")
 
 
@@ -236,9 +335,15 @@ def restore_course(course_id):
     user_id = users.user_id()
     teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
-        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Pääsy kielletty.", 
+            back="/profile/" + str(user_id))
     if not courses.set_visible(course_id, True):
-        return render_template("error.html", message="Kurssin palauttaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+        return render_template(
+            "error.html", 
+            message="Kurssin palauttaminen ei onnistunut.", 
+            back="/course/" + str(course_id) + "/edit")
     return redirect("/course/" + str(course_id) + "/edit")
 
 
@@ -248,15 +353,29 @@ def statistics(course_id, user):
     if not users.logged_in():
         return redirect("/login")
     if not users.owner_of(user) and not users.owner_of(courses.get_teacher(course_id)):
-        return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Pääsy kielletty.", 
+            back="/profile/" + str(user_id))
     answers_list = answers.get_by_course(user, course_id)
     if not answers_list:
-        return render_template("error.html", message="Et ole vielä vastannut yhteenkään tehtävään.", back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message="Et ole vielä vastannut yhteenkään tehtävään.", 
+            back="/profile/" + str(user_id))
     correct_answers = answers.count_correct(answers_list)
     incorrect_answers = answers.count_incorrect(answers_list)
     success_rate = answers.get_success_rate(correct_answers, incorrect_answers)
     subject = answers_list[0].subject
-    return render_template("statistics.html", course=course_id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back=request.referrer)
+    return render_template(
+        "statistics.html", 
+        course=course_id, 
+        user=user, 
+        correct=correct_answers, 
+        incorrect=incorrect_answers, 
+        success=success_rate, 
+        subject=subject, 
+        back=request.referrer)
 
 
 @app.route("/course/<int:course_id>/enroll")
@@ -265,14 +384,19 @@ def enroll(course_id):
     if not users.logged_in():
         return redirect("/login")
     if not enrollments.enroll(user_id, course_id):
-        return render_template("error.html", message='Ilmoittautuminen ei onnistunut.', back="/profile/" + str(user_id))
+        return render_template(
+            "error.html", 
+            message='Ilmoittautuminen ei onnistunut.', 
+            back="/profile/" + str(user_id))
     return redirect("/course/" + str(course_id))
 
 
 @app.route("/course/<int:course_id>/info")
 def course_info(course_id):
     current_course = courses.get_course(course_id)
-    return render_template("info.html", course=current_course)
+    return render_template(
+        "info.html", 
+        course=current_course)
 
 
 @app.route("/course/<int:course_id>/confirm")
@@ -281,15 +405,24 @@ def confirm(course_id):
     if not users.logged_in():
         return redirect("/login")
     if enrollments.enrolled(user_id, course_id):
-        return render_template("error.html", message="Olet jo ilmoittautunut tälle kurssille.", back="/courses")
+        return render_template(
+            "error.html", 
+            message="Olet jo ilmoittautunut tälle kurssille.", 
+            back="/courses")
     message = 'Haluatko ilmoittautua kurssille?'
-    return render_template("confirm.html", message=message, id=course_id, back=request.referrer)
+    return render_template(
+        "confirm.html", 
+        message=message, 
+        id=course_id, 
+        back=request.referrer)
 
 
 @app.route("/question/<int:question_id>")
 def question(question_id):
     current_question = questions.get_question(question_id)
-    return render_template("question.html", question=current_question)
+    return render_template(
+        "question.html", 
+        question=current_question)
 
 
 @app.route("/course/<int:course_id>/question/<int:question_id>/remove")
@@ -298,9 +431,15 @@ def remove(course_id, question_id):
         return redirect("/login")
     teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
-        return render_template("error.html", message="Toiminto ei ole sallittu.", back="/")
+        return render_template(
+            "error.html", 
+            message="Toiminto ei ole sallittu.", 
+            back="/")
     if not questions.remove_question(question_id):
-        return render_template("error.html", message="Tehtävän poistaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+        return render_template(
+            "error.html", 
+            message="Tehtävän poistaminen ei onnistunut.", 
+            back="/course/" + str(course_id) + "/edit")
     courses.update_exercise_count(course_id, "reduce")
     return redirect("/course/" + str(course_id) + "/edit")
 
