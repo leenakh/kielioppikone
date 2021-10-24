@@ -24,7 +24,7 @@ Sovellus on tarkoitettu suomen kielen sanojen taivutusmuotojen harjoitteluun. So
 
 Toteutan ulkoasun ns. käsin kirjoittamalla tyylimäärittelyt css-tiedostoon. Viimeistelen visuaalisen ilmeen itse tekemälläni taustagrafiikalla ja hyödyntämällä Google Fontsia.
 
-## Sovelluksen tila 10.10.2021
+## Sovelluksen tila 24.10.2021
 
 Sovellus on käynnissä osoitteessa [https://kielioppikone.herokuapp.com](https://kielioppikone.herokuapp.com). Tietokannassa on jonkin verran testidataa, mm. käyttäjät *mummomatikainen* ja *kattimatikainen*, joista ensimmäisellä on opettajan rooli ja jälkimmäisellä tavallisen käyttäjän rooli. Kummankin salasana on "matikainen".
 
@@ -40,13 +40,10 @@ Sovellus on käynnissä osoitteessa [https://kielioppikone.herokuapp.com](https:
 - Opettaja pystyy muokkaamaan kurssin otsikkoa ja kuvaustekstiä.
 
 Jatkokehityssuunnitelmia:
-- tietokannasta taitaa puuttua joitain constrainteja?
-- lomakkeiden kenttiin not null -vaatimus sekä täyttöohjeet
-- lisävaatimuksia salasanan koostumukselle
+
 - toisen tehtävätyypin toteutus
 - käyttäjän kurssikohtaisten tilastotietojen laajennus
 - kurssien luokitteleminen aihepiirin mukaan; mahdollistaa tarkemman osaamisprofiilin muodostamisen oppilaalle sekä selkeyttää kurssitehtävien laatimista
-- saavutettavuuden parantaminen?
-- tietokantakyselyjen tehokkuuden parantaminen?
+- tietokantakyselyjen tehokkuuden parantaminen
 - lisää ulkoasun tyylittelyä
-- koodin siistimistä ja yhdenmukaistamista sekä sovelluksen rakenteen kehittelyä eteenpäin
+- sovelluksen rakenteen kehittelyä eteenpäin
