@@ -42,13 +42,13 @@
     <table>
         <form action="/course/{{course_id}}/edit/add" method="POST">
             <tr>
-                <td><label>Perusmuoto</label></td>
-                <td><input list="lemmas" type="text" name="lemma"></td>
+                <td><label for="lemma">Perusmuoto</label></td>
+                <td><input list="lemmas" type="text" id="lemma" name="lemma"></td>
                 <td><label>Määritelmä</label></td>
             </tr>
             <tr>
-                <td><label>Taivutus</label></td>
-                <td><input type="text" name="inflection"></td>
+                <td><label for="inflection">Taivutus</label></td>
+                <td><input type="text" id="inflection" name="inflection"></td>
                 <td rowspan="2">
                     {% for definition in definitions %}
                     <input type="radio" id={{definition.definition}} name="definition"
@@ -70,12 +70,12 @@
     <table>
         <form action="/course/{{course_id}}/edit/change" method="POST">
             <tr>
-                <td><label>Otsikko</label></td>
-                <td><input type="text" name="subject" size="54"></td>
+                <td><label for="subject">Otsikko</label></td>
+                <td><input type="text" id="subject" name="subject" size="54"></td>
             </tr>
             <tr>
-                <td><label>Kuvaus</label></td>
-                <td><textarea name="description" cols="50" rows="4" scrolling="no"></textarea>
+                <td><label for="description">Kuvaus</label></td>
+                <td><textarea id="description" name="description" cols="50" rows="4" scrolling="no"></textarea>
             </tr>
             <tr>
                 <td></td>

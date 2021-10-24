@@ -10,11 +10,11 @@
             <td>{{ question.lemma }}</td>
             <td>{{ question.definition}}</td>
         </tr>
-        <th>Vastaus</th>
+        <th><label for="answer">Vastaus</label></th>
         <tr>
             <td colspan="2">
                 <form action="/answer/{{question.id}}" method="POST" target="frame" autocomplete="off">
-                    <input type="text" name="answer" key={{question.id}}>
+                    <input type="text" id="answer" name="answer" key={{question.id}}>
                     <input type="submit" value="Tarkista">
                     <input type="hidden" name="correct" value="{{question.inflection}}">
                     <input type="hidden" name="course" value="{{question.course_id}}">

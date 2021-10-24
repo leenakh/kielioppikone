@@ -10,9 +10,10 @@
 </form>
 
 {% for course in courses %}
-<div class="container">
+<div class="container-course">
     <a href="/course/{{course.id}}">
-        {{ course.subject }}</a><br>
+        {{ course.subject }}
+    </a><br>
     <i>{{ course.description }}</i><br>
     {{ course.first_name }} {{course.last_name}}<br>
     <b>{{ course.exercises }} tehtävää</b>

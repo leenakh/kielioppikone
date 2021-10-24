@@ -3,20 +3,25 @@
 {% block content %}
 <h1>Rekisteröidy</h1>
 <form action="/register" method="POST">
-    <p>Etunimi:<br>
-        <input type="text" name="first-name">
+    <p>
+        <label for="first-name">Etunimi</label><br>
+        <input type="text" id="first-name" name="first-name" minlength="2" maxlength="50">
     </p>
-    <p>Sukunimi:<br>
-        <input type="text" name="last-name">
+    <p>
+        <label for="last-name">Sukunimi</label><br>
+        <input type="text" id="last-name" name="last-name" minlength="2" maxlength="50">
     </p>
-    <p>Käyttäjätunnus:<br>
-        <input type="text" name="username">
+    <p>
+        <label for="username">Käyttäjätunnus</label><br>
+        <input type="text" id="username" name="username" minlength="4" maxlength="20">
     </p>
-    <p>Salasana:<br>
-        <input type="password" name="password1">
+    <p>
+        <label for="password1">Salasana</label><br>
+        <input type="password" id="password1" name="password1" minlength="7" maxlength="20">
     </p>
-    <p>Salasana uudestaan:<br>
-        <input type="password" name="password2">
+    <p>
+        <label for="password2">Salasana uudestaan</label><br>
+        <input type="password" id="password2" name="password2" minlength="7" maxlength="20">
     </p>
     <input type="submit" value="Rekisteröidy">
 </form>
