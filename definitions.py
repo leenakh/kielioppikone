@@ -2,7 +2,8 @@ from db import db
 
 
 def get_all():
-    sql = "select definitions.definition from definitions"
+    sql = "select definitions.definition from definitions \
+        order by definitions.definition desc"
     result = db.session.execute(sql)
     return result.fetchall()
 

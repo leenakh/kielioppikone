@@ -40,9 +40,11 @@ Sovellus on käynnissä osoitteessa [https://kielioppikone.herokuapp.com](https:
 - Opettaja pystyy muokkaamaan kurssin otsikkoa ja kuvaustekstiä.
 
 Jatkokehityssuunnitelmia:
+- tietokannasta taitaa puuttua joitain constrainteja?
+- lomakkeiden kenttiin not null -vaatimus sekä täyttöohjeet
+- lisävaatimuksia salasanan koostumukselle
 - toisen tehtävätyypin toteutus
 - käyttäjän kurssikohtaisten tilastotietojen laajennus
-- etusivun sisällön toteutus
 - kurssien luokitteleminen aihepiirin mukaan; mahdollistaa tarkemman osaamisprofiilin muodostamisen oppilaalle sekä selkeyttää kurssitehtävien laatimista
 - saavutettavuuden parantaminen?
 - tietokantakyselyjen tehokkuuden parantaminen?

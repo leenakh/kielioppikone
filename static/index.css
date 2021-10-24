@@ -131,6 +131,14 @@ label {
     padding-right: 0px;
 }
 
+.aligned-top {
+    vertical-align: top;
+}
+
+.aligned-bottom {
+    vertical-align: bottom;
+}
+
 .first-column {
     width: 40%
 }
