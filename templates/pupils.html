@@ -16,7 +16,7 @@
                     {{ pupil.first_name }} {{ pupil.last_name }}
                 </a>
             </td>
-            <td>{{ pupil.entered | format }}</td>
+            <td>{{ pupil.entered | format_date }}</td>
             <td class="aligned-right">{{ pupil.count }}</td>
         </tr>
         {% endfor %}

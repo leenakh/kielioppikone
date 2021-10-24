@@ -88,37 +88,37 @@ def update_exercise_count(course_id, operation):
     return True
 
 
-def update_subject(id, subject):
+def update_subject(course_id, subject):
     try:
-        sql = "update courses set subject = :subject where id = :id"
-        db.session.execute(sql, {"id": id, "subject": subject})
+        sql = "update courses set subject = :subject where id = :course_id"
+        db.session.execute(sql, {"course_id": course_id, "subject": subject})
         db.session.commit()
     except:
         return False
     return True
 
 
-def update_description(id, description):
+def update_description(course_id, description):
     try:
-        sql = "update courses set description = :description where id = :id"
-        db.session.execute(sql, {"id": id, "description": description})
+        sql = "update courses set description = :description where id = :course_id"
+        db.session.execute(sql, {"course_id": course_id, "description": description})
         db.session.commit()
     except:
         return False
     return True
 
 
-def update_course_info(id, subject, description):
+def update_course_info(course_id, subject, description):
     if subject != '' and description == '':
-        if not update_subject(id, subject):
+        if not update_subject(course_id, subject):
             return False
     elif description != '' and subject == '':
-        if not update_description(id, description):
+        if not update_description(course_id, description):
             return False
     elif subject != '' and description != '':
         try:
-            sql = "update courses set description = :description, subject = :subject where id = :id"
-            db.session.execute(sql, {"id": id, "subject": subject, "description": description})
+            sql = "update courses set description = :description, subject = :subject where id = :course_id"
+            db.session.execute(sql, {"course_id": course_id, "subject": subject, "description": description})
             db.session.commit()
         except:
             return False

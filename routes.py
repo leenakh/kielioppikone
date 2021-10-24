@@ -21,7 +21,7 @@ def valid_input(min_length, max_length, user_input):
 
 
 @app.template_filter()
-def format(date):
+def format_date(date):
     date_parts = str(date).split(" ")
     date_parts_final = date_parts[0].split("-")
     day = date_parts_final[2]
@@ -91,8 +91,8 @@ def get_courses():
     return render_template("courses.html", courses=courses_list)
 
 
-@app.route("/profile/<int:id>")
-def profile(id):
+@app.route("/profile/<int:profile_id>")
+def profile(profile_id):
     if not users.logged_in():
         return redirect("/login")
     correct_answers = 0
@@ -102,7 +102,7 @@ def profile(id):
     allow = False
     if users.is_admin():
         allow = True
-    elif users.owner_of(id):
+    elif users.owner_of(profile_id):
         allow = True
     if not allow:
         return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
@@ -117,8 +117,8 @@ def profile(id):
     return render_template("profile.html", user=user_id, courses=users_courses, is_user=users.is_user(), is_teacher=users.is_teacher(), is_admin=users.is_admin(), correct=correct_answers, incorrect=incorrect_answers, success=success_rate)
 
 
-@app.route("/answer/<int:id>", methods=["POST"])
-def answer(id):
+@app.route("/answer/<int:question_id>", methods=["POST"])
+def answer(question_id):
     validate_token(request.form["csrf_token"])
     user_id = users.user_id()
     if answers.count_recent(user_id).count > 200:
@@ -129,9 +129,9 @@ def answer(id):
     is_correct = True
     if current_answer != correct:
         is_correct = False
-    if not answers.add(user_id, id, current_course, is_correct):
+    if not answers.add(user_id, question_id, current_course, is_correct):
         return render_template("error.html", message='Vastauksen lähettäminen ei onnistunut.', back="/course/" + str(current_course))
-    return render_template("answer.html", answer=current_answer, id=id, correct=correct, course=current_course)
+    return render_template("answer.html", answer=current_answer, question_id=question_id, correct=correct, course=current_course)
 
 
 @app.route("/courses/add", methods=["POST"])
@@ -174,8 +174,8 @@ def edit(course_id):
     user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    course = courses.get_course(course_id)
-    if not course:
+    current_course = courses.get_course(course_id)
+    if not current_course:
         return render_template("error.html", message="Kurssia ei ole olemassa.", back="/profile/" + str(user_id))
     teacher_id = courses.get_teacher(course_id)
     if not users.owner_of(teacher_id):
@@ -183,7 +183,7 @@ def edit(course_id):
     course_questions = questions.get_course_questions(course_id)
     words_list = words.get_all()
     definitions_list = definitions.get_all()
-    return render_template("edit.html", course_questions=course_questions, exercises=len(course_questions), course_id=course_id, words=words_list, definitions=definitions_list, course=course)
+    return render_template("edit.html", course_questions=course_questions, exercises=len(course_questions), course_id=course_id, words=words_list, definitions=definitions_list, course=current_course)
 
 
 @app.route("/course/<int:course_id>/edit/add", methods=["GET", "POST"])
@@ -208,16 +208,16 @@ def add(course_id):
     return redirect("/course/" + str(course_id) + "/edit")
 
 
-@app.route("/course/<int:id>/edit/change", methods=["POST"])
-def change(id):
+@app.route("/course/<int:course_id>/edit/change", methods=["POST"])
+def change(course_id):
     validate_token(request.form["csrf_token"])
     subject = request.form["subject"]
     description = request.form["description"]
     if not valid_input(0, 50, subject) or not valid_input(0, 200, description):
-        return render_template("error.html", message="Otsikko saa olla enintään 50 merkkiä ja kuvaus enintään 200 merkkiä pitkä.", back="/course/" + str(id) + "/edit")
-    if not courses.update_course_info(id, subject, description):
-        return render_template("error.html", message="Kurssin tietojen muuttaminen ei onnistunut.", back="/course/" + str(id) + "/edit")
-    return redirect("/course/" + str(id) + "/edit")
+        return render_template("error.html", message="Otsikko saa olla enintään 50 merkkiä ja kuvaus enintään 200 merkkiä pitkä.", back="/course/" + str(course_id) + "/edit")
+    if not courses.update_course_info(course_id, subject, description):
+        return render_template("error.html", message="Kurssin tietojen muuttaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
+    return redirect("/course/" + str(course_id) + "/edit")
 
 
 @app.route("/course/<int:course_id>/remove")
@@ -228,7 +228,7 @@ def remove_course(course_id):
         return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
     if not courses.set_visible(course_id, False):
         return render_template("error.html", message="Kurssin piilottaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
-    return redirect("/profile/" + str(user_id))
+    return redirect("/course/" + str(course_id) + "/edit")
 
 
 @app.route("/course/<int:course_id>/restore")
@@ -239,24 +239,24 @@ def restore_course(course_id):
         return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
     if not courses.set_visible(course_id, True):
         return render_template("error.html", message="Kurssin palauttaminen ei onnistunut.", back="/course/" + str(course_id) + "/edit")
-    return redirect("/profile/" + str(user_id))
+    return redirect("/course/" + str(course_id) + "/edit")
 
 
-@app.route("/course/<int:id>/statistics/<int:user>")
-def statistics(id, user):
+@app.route("/course/<int:course_id>/statistics/<int:user>")
+def statistics(course_id, user):
     user_id = users.user_id()
     if not users.logged_in():
         return redirect("/login")
-    if not users.owner_of(user) and not users.owner_of(courses.get_teacher(id)):
+    if not users.owner_of(user) and not users.owner_of(courses.get_teacher(course_id)):
         return render_template("error.html", message="Pääsy kielletty.", back="/profile/" + str(user_id))
-    answers_list = answers.get_by_course(user, id)
+    answers_list = answers.get_by_course(user, course_id)
     if not answers_list:
         return render_template("error.html", message="Et ole vielä vastannut yhteenkään tehtävään.", back="/profile/" + str(user_id))
     correct_answers = answers.count_correct(answers_list)
     incorrect_answers = answers.count_incorrect(answers_list)
     success_rate = answers.get_success_rate(correct_answers, incorrect_answers)
     subject = answers_list[0].subject
-    return render_template("statistics.html", course=id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back=request.referrer)
+    return render_template("statistics.html", course=course_id, user=user, correct=correct_answers, incorrect=incorrect_answers, success=success_rate, subject=subject, back=request.referrer)
 
 
 @app.route("/course/<int:course_id>/enroll")
@@ -271,8 +271,8 @@ def enroll(course_id):
 
 @app.route("/course/<int:course_id>/info")
 def course_info(course_id):
-    course = courses.get_course(course_id)
-    return render_template("info.html", course=course)
+    current_course = courses.get_course(course_id)
+    return render_template("info.html", course=current_course)
 
 
 @app.route("/course/<int:course_id>/confirm")

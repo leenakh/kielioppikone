@@ -4,22 +4,22 @@ from flask import session
 from db import db
 
 
-def register(username, password, role, first_name, last_name):
+def register(username_entered, password, role, first_name, last_name):
     hash_value = generate_password_hash(password)
     try:
         sql = "INSERT INTO users (username, password, role, first_name, last_name) \
-            VALUES (:username, :password, :role, :first_name, :last_name)"
+            VALUES (:username_entered, :password, :role, :first_name, :last_name)"
         db.session.execute(
-            sql, {"username": username, "password": hash_value, "role": role, "first_name": first_name, "last_name": last_name})
+            sql, {"username_entered": username_entered, "password": hash_value, "role": role, "first_name": first_name, "last_name": last_name})
         db.session.commit()
     except:
         return False
-    return login(username, password)
+    return login(username_entered, password)
 
 
-def login(username, password):
-    sql = "SELECT id, username, password, role FROM users WHERE username=:username"
-    result = db.session.execute(sql, {"username": username})
+def login(username_entered, password):
+    sql = "SELECT id, username, password, role FROM users WHERE username=:username_entered"
+    result = db.session.execute(sql, {"username_entered": username_entered})
     user = result.fetchone()
     if not user:
         return False
@@ -32,9 +32,9 @@ def login(username, password):
     return False
 
 
-def exists(username):
-    sql = "select 1 from users where username = :username"
-    result = db.session.execute(sql, {"username":username})
+def exists(username_entered):
+    sql = "select 1 from users where username = :username_entered"
+    result = db.session.execute(sql, {"username_entered":username_entered})
     if result.fetchone():
         return True
     return False
@@ -72,5 +72,5 @@ def logged_in():
     return user_id() != 0
 
 
-def owner_of(id):
-    return user_id() == id
+def owner_of(users_id):
+    return user_id() == users_id
